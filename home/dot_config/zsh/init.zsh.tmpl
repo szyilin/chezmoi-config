@@ -121,10 +121,5 @@ rm() {
 if command -v tmux &>/dev/null; then
   alias tmux="tmux -f ~/.config/tmux/.tmux.conf"
 fi
-# 配置 brew 自动备份命令
-brew-bundle() {
-  local brew_file_name="{{ if eq .chezmoi.os "darwin" }}brewfile-mac{{ else if eq .chezmoi.os "linux" }}brewfile-linux{{ else }}brewfile-other{{ end }}"
-  brew bundle dump --describe --file="$(chezmoi source-path)/resources/${brew_file_name}" --force
-}
 # ============================================== 别名配置 end   ===================================================
 
