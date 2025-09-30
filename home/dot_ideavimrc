@@ -1,0 +1,230 @@
+let mapleader=" " " 设置 leader 映射键
+"  ================================ 插件 ================================
+Plug 'vim-easymotion' " C-; 并添加一个想要跳转的位置，最后根据提示选取即可
+Plug 'preservim/nerdtree'
+Plug 'tpope/vim-surround' " ys, cs, ds, S, 字体环绕
+Plug 'vim-commentary' " 使用 gcc 注释单行 gc 注释选中的多行注释
+Plug 'argtextobj.vim' " Text Object 模式添加 a 模式表示选中一整个参数
+Plug 'machakann/vim-highlightedyank' " 当复制后被复制内容会有短暂延迟光亮
+Plug 'vim-scripts/Improved-paragraph-motion' " 使用 { } 可以匹配带有空格的空行
+set which-key " 按键提示插件
+
+let g:argtextobj_pairs="(:),{:},<:>"
+set clipboard+=unnamed " 使用系统剪贴板
+
+" =============================== 插件设置 ===============================
+" nerdtree
+" Which-key
+" 使用按键提示应该禁用这个选项
+set notimeout
+" 按键提示延迟
+set timeoutlen=5000
+" 让 Which-key 同样提示默认 vim 提示
+" let g:WhichKey_ShowVimActions = "true"
+" 提示排序方式
+let g:WhichKey_SortOrder = "by_key_prefix_last"
+" vim-highlightedyank 设置
+let g:highlightedyank_highlight_duration = "300" " 延迟关闭 ms
+" let g:highlightedyank_highlight_color = "rgba(69, 130, 246, 0.22)"
+" let g:highlightedyank_highlight_foreground_color = "rgba(0, 0, 0, 255)"
+" 打开关闭 nerdtree
+nnoremap <leader>o :NERDTreeToggle<CR>
+" 定位当前文件位置
+nnoremap <leader>e :NERDTreeFind<CR>
+" 在目录中使用 space o 关闭目录
+" let g:NERDTreeMapQuit=" o"
+let g:NERDTreeMapJumpNextSibling="<C-j>"
+let g:NERDTreeMapJumpPrevSibling="<C-k>"
+" 禁用 easymotion 默认快捷操作
+let g:EasyMotion_do_mapping=0
+
+"  ============================== keyMap 键盘映射 ========================
+" $ 在 v 模式下不会选中回车符号"
+vnoremap $ $<Left>
+" 让 & :s 重复命令可以保留标识位
+nnoremap & :&&<CR>
+vnoremap & :&&<CR>
+" 选中模式下缩进一次不会取消选中
+vnoremap < <gv
+vnoremap > >gv
+" * 和 # 不自动跳到下一个位置
+nnoremap # viwy:let @/='<C-r>"'<CR>:set hlsearch<CR>
+nnoremap * viwy:let @/='<C-r>"'<CR>:set hlsearch<CR>
+" 清空高亮
+nnoremap <C-l> :noh<CR>
+" 输入时候更方便
+inoremap <C-e> <END>
+inoremap <C-a> <Esc>^i
+inoremap <C-b> <Left>
+inoremap <C-n> <Down>
+inoremap <C-p> <Up>
+inoremap <C-f> <Right>
+" 严格让 CTRL + c 匹配 esc
+inoremap <C-c> <Esc>
+nnoremap <C-c> <Esc>
+vnoremap <C-c> <Esc>
+" 代码定义跳转
+nnoremap gd :<C-u>action GotoDeclaration<CR>
+nnoremap gi :<C-u>action GotoImplementation<CR>
+" ideavim 插件相关
+nnoremap <leader>Cr :action IdeaVim.ReloadVimRc.reload<CR>
+nnoremap <leader>Cl :actionlist<CR>
+
+" ================================ 屏幕移动相关配置 ================================
+nnoremap <leader>bd :bd<CR>
+nnoremap <C-n> gt
+nnoremap <C-p> gT
+nnoremap <C-o> :action Back<CR>
+nnoremap <C-i> :action Forward<CR>
+" 打开终端窗口
+:map <C-/> <Action>(ActivateTerminalToolWindow)
+
+" ================================= 基础配置 ===================================
+" 显示行号
+set nu
+" 相对定位行号
+set relativenumber
+" 支持搜索高亮
+set hlsearch
+" 光标距离最顶行数目
+set scrolloff=5
+" 边输入边搜索
+set incsearch
+" 搜索大小写不敏感，除非包含大写
+set ignorecase
+set smartcase
+" 搜索高亮 :noh - 取消高亮
+set hlsearch
+" 返回正常模式切换输入法
+set keep-english-in-normal
+
+"  =================== 来自 ideaVim 的默认设置说明文档等 ======================
+" Don't use Ex mode, use Q for formatting.
+map Q gq
+" 输入 J 自动拼接可拼接的两部分内容
+set ideajoin
+"" -- Map IDE actions to IdeaVim -- https://jb.gg/abva4t
+"  ========================== 编写代码相关映射 ===============================
+" 映射 == 到 代码格式化功能
+nnoremap == :action ReformatCode<CR>
+" 优化导包
+nnoremap =i :action OptimizeImports<CR>
+" 跳转错误
+nnoremap ]e :action GotoNextError<CR>
+nnoremap [e :action GotoPreviousError<CR>
+" 重命名 文件
+nnoremap <Leader>n :action RenameFile<CR>
+vnoremap <Leader>n :action RenameFile<CR>
+" 重命名 变量、类名
+nnoremap <Leader>n :action RenameElement<CR>
+vnoremap <Leader>n :action RenameElement<CR>
+" 抽取方法
+nnoremap <Leader>m :action ExtractMethod<CR>
+vnoremap <Leader>m :action ExtractMethod<CR>
+" 抽取变量
+nnoremap <Leader>v :action IntroduceVariable<CR>
+vnoremap <Leader>v :action IntroduceVariable<CR>
+" ========================= 运行代码 Run ====================================
+" 运行当前光标下可运行的内容
+map <leader>rr <Action>(RunClass)
+" 打开查找所有可运行的查找窗口
+map <leader>rf <Action>(RunAnything)
+" Stop 结束表头运行的程序，结束当前操作台正在运行中的程序
+map <leader>rs <Action>(Stop)
+" StopBackgroundProcesses 结束当前光标下的运行程序 "
+" ============================= Git 相关 ====================================
+" 展示修改时间和作者
+nnoremap <Leader>ga :action Annotate<CR>
+" 下一个变化
+map <leader>gj <Action>(NextDiff)
+" 上一个变化
+map <leader>gk <Action>(PreviousDiff)
+" Branches Optional 分支选项
+map <leader>gb <Action>(Git.Branches)
+" pull
+nnoremap <leader>gl :action Vcs.UpdateProject<CR>
+" commit
+nnoremap <leader>gc :action CheckinProject<CR>
+" push
+nnoremap <leader>gp :action Vcs.Push<CR>
+" ============================ 文件查找相关 ===============================
+" 按照路径查找
+nnoremap <Leader>fu :action GotoUrlAction<CR>
+" 按照文本内容查找
+nnoremap <Leader>fa :action FindInPath<CR>
+nnoremap <Leader>/ :action FindInPath<CR>
+" 按照文件名称查找
+nnoremap <Leader>ff :action GotoFile<CR>
+nnoremap <leader><space> :action GotoFile<CR>
+" ============================ 代码调试 Debug ===============================
+" 切换到当前行的断点
+"map \b <Action>(ToggleLineBreakpoint)
+" Find more examples here: https://jb.gg/share-ideavimrc
+" 在这里找到更多例子
+" :actionlist 这个命令可以显示 idea 允许那些 action 命令被映射
+
+" ========================== which-key 快捷键展示配置相关 ==========================
+" 选项说明:
+" 1. WhichKeyDesc_[path] 自定义唯一描述
+" 2. 目前 无法处理特殊按键 <C-*> 或者 <Esc> 这种
+" 这里从 WhichKeyDesc 往后的内容是命令说明和层级关系，并不是某个确定的指令
+let g:WhichKeyDesc_leader    = "<leader> 自定义映射按键"
+
+" <leader> f 查找相关前缀
+let g:WhichKeyDesc_find         = "<leader>f 查找相关"
+let g:WhichKeyDesc_find_url     = "<leader>fu 按照Url查找"
+let g:WhichKeyDesc_find_text    = "<leader>ff 按照文件名"
+let g:WhichKeyDesc_find_text_a  = "<leader><space> 按照文件名"
+let g:WhichKeyDesc_find_files   = "<leader>/ 按照内容"
+let g:WhichKeyDesc_find_files_a = "<leader>fa 按照内容"
+
+" <leader> r 运行相关
+let g:WhichKeyDesc_run      = "<leader>r 运行相关"
+let g:WhichKeyDesc_run_run  = "<leader>rr 运行光标位置程序"
+let g:WhichKeyDesc_run_find = "<leader>rf 查找所有可运行"
+let g:WhichKeyDesc_run_stop = "<leader>rs 停止当前控制台正在运行程序"
+
+" <leader> g git 相关
+let g:WhichKeyDesc_git      = "<leader>g git 相关"
+let g:WhichKeyDesc_git_a    = "<leader>ga 显示作者"
+let g:WhichKeyDesc_git_j    = "<leader>gj 下一个变化"
+let g:WhichKeyDesc_git_k    = "<leader>gk 上一个变化"
+let g:WhichKeyDesc_git_b    = "<leader>gb Branches Optional"
+let g:WhichKeyDesc_git_u    = "<leader>gl pull"
+let g:WhichKeyDesc_git_c    = "<leader>gc commit"
+let g:WhichKeyDesc_git_p    = "<leader>gp push"
+
+" = 代码格式相关
+let g:WhichKeyDesc_format        = "= 格式相关"
+let g:WhichKeyDesc_format_code   = "== 格式化"
+let g:WhichKeyDesc_format_inport = "=i 优化导包"
+
+" g g 命令
+let g:WhichKeyDesc_g     = "g g 命令"
+let g:WhichKeyDesc_g_d   = "gd 代码定义"
+let g:WhichKeyDesc_g_i   = "gi 代码实现"
+let g:WhichKeyDesc_g_c   = "gc 注释(可选{motion})"
+let g:WhichKeyDesc_g_c_c = "gcc 注释一行"
+
+" 插件相关配置
+let g:WhichKeyDesc_C   = "<leader>C 插件相关配置"
+let g:WhichKeyDesc_C_r = "<leader>Cr 重新加载配置"
+let g:WhichKeyDesc_C_l = "<leader>Cl 支持的命令列表"
+
+" [ ] 前缀
+let g:WhichKeyDesc_bn_e   = "]e 下个错误"
+let g:WhichKeyDesc_bp_e   = "[e 上个错误"
+
+" other
+let g:WhichKeyDesc_tree_open      = "<leader>o 打开目录"
+let g:WhichKeyDesc_tree_find      = "<leader>e 定位文件位置"
+let g:WhichKeyDesc_extract_var    = "<leader>v 抽取变量"
+let g:WhichKeyDesc_extract_method = "<leader>m 抽取方法"
+let g:WhichKeyDesc_rename         = "<leader>n 重命名"
+let g:WhichKeyDesc_buffer_close   = "<leader>bd 关闭标签"
+let g:WhichKeyDesc_surround_y   = "ys 增加环绕"
+let g:WhichKeyDesc_surround_d   = "ds 删除环绕"
+let g:WhichKeyDesc_surround_c   = "cs 改变环绕"
+
+" 所有不需要展示的
+let g:WhichKeyDesc_empty_g_c_u = "gcu"

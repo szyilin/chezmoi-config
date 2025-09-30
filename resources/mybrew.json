@@ -1,0 +1,70 @@
+{
+  "Darwin": {
+    "package": {
+      "git": {
+        "default": true
+      },
+      "chezmoi": {
+        "default": true
+      },
+      "age": {
+        "default": true
+      },
+      "neovim": {
+        "default": true
+      },
+      "lua": {
+        "default": true
+      },
+      "fd": {
+        "default": true
+      },
+      "daipeihust/tap/im-select": {
+        "default": true
+      },
+      "ffmpeg": {
+        "default": false
+      },
+      "mysql-client@8.0": {
+        "default": false
+      },
+      "nvm": {
+        "default": false
+      },
+      "pyenv": {
+        "default": false
+      },
+      "ripgrep": {
+        "default": false
+      },
+      "rustup": {
+        "default": false
+      },
+      "tmux": {
+        "default": false
+      }
+    }
+  },
+  "Linux": {
+    "package": {
+      "chezmoi": {
+        "default": true
+      },
+      "age": {
+        "default": true
+      },
+      "neovim": {
+        "default": true
+      },
+      "lua": {
+        "default": true
+      },
+      "fd": {
+        "default": true
+      },
+      "tmux": {
+        "default": false
+      }
+    }
+  }
+}

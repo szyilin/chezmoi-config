@@ -1,0 +1,6 @@
+[user]
+	name = Kaiwen
+	email = a1518967800@163.com
+[core]
+	autocrlf = input
+	excludesfile = ~/.gitignore_global
