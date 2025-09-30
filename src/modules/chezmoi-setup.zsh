@@ -318,7 +318,7 @@ _apply_chezmoi_config() {
 _find_mychezmoi_script() {
     # 1. 优先使用 CHEZMOI_PROJECT_ROOT
     if [[ -n "${CHEZMOI_PROJECT_ROOT:-}" ]]; then
-        local script_path="$CHEZMOI_PROJECT_ROOT/home/dot_zsh-config/bin/executable_mychezmoi.py"
+        local script_path="$CHEZMOI_PROJECT_ROOT/home/dot_local/bin/executable_mychezmoi.py"
         if [[ -f "$script_path" ]]; then
             echo "$script_path"
             return 0
@@ -326,7 +326,7 @@ _find_mychezmoi_script() {
     fi
     
     # 2. 在用户主目录查找 (chezmoi apply 后)
-    local home_script="$HOME/.zsh-config/bin/mychezmoi.py"
+    local home_script="$HOME/.local/bin/mychezmoi.py"
     if [[ -f "$home_script" ]]; then
         echo "$home_script"
         return 0

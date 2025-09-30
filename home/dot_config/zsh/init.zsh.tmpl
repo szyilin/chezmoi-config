@@ -38,10 +38,9 @@ else
     export EDITOR=vim
 fi
 
-# 自定义脚本，导入环境变量
-if [ -s "$HOME/.zsh-config/bin" ]; then
-  export MY_CUSTOM_BIN=$HOME/.zsh-config/bin
-  export PATH=$PATH:"$MY_CUSTOM_BIN"
+# 自定义脚本，导入环境变量 (XDG 标准)
+if [ -s "$HOME/.local/bin" ]; then
+  export PATH="$HOME/.local/bin:$PATH"
 fi
 
 # 确保导出

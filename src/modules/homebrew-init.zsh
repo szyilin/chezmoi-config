@@ -127,7 +127,7 @@ homebrew-init_verify() {
 _find_mybrew_script() {
     # 1. 优先使用 CHEZMOI_PROJECT_ROOT
     if [[ -n "${CHEZMOI_PROJECT_ROOT:-}" ]]; then
-        local script_path="$CHEZMOI_PROJECT_ROOT/home/dot_zsh-config/bin/executable_mybrew.py"
+        local script_path="$CHEZMOI_PROJECT_ROOT/home/dot_local/bin/executable_mybrew.py"
         if [[ -f "$script_path" ]]; then
             echo "$script_path"
             return 0
@@ -141,7 +141,7 @@ _find_mybrew_script() {
     fi
     
     # 3. 在用户主目录查找
-    local home_script="$HOME/.zsh-config/bin/mybrew.py"
+    local home_script="$HOME/.local/bin/mybrew.py"
     if [[ -f "$home_script" ]]; then
         echo "$home_script"
         return 0
