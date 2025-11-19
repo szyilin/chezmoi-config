@@ -5,8 +5,9 @@ return {
   -- 自动切换中英文
   {
     "keaising/im-select.nvim",
+    lazy = false, -- 确保启动时加载
     opts = {
-      defaualt_im_select = "com.apple.keylayout.ABC",
+      default_im_select = "com.apple.keylayout.ABC",
       default_command = "im-select",
     }
   }
