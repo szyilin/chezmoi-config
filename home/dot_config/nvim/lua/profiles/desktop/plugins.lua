@@ -11,4 +11,12 @@ return {
       require "profiles.desktop.configs.lspconfig"
     end,
   },
+
+  -- 特殊标签高亮
+  {
+    "folke/todo-comments.nvim",
+    lazy = false,
+    dependencies = { "nvim-lua/plenary.nvim" },
+    opts = {},
+  },
 }
