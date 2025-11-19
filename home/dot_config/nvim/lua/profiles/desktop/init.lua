@@ -32,15 +32,15 @@ function M.setup()
     safe_dofile(cache .. "statusline")
   end
 
-  -- Load core (universal) configurations
-  require "core.options"
-  require "core.autocmds"
-  require "core.mappings"
-
   -- Load NvChad-specific configurations
   require "nvchad.options"
   require "nvchad.autocmds"
   require "nvchad.mappings"
+
+  -- Load core (universal) configurations
+  require "core.options"
+  require "core.autocmds"
+  require "core.mappings"
 
   -- Load desktop profile-specific configurations
   require("profiles.desktop.options").setup()

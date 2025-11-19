@@ -1,5 +1,6 @@
 local M = {}
 
+-- 初始化 lazy.nvim
 local function ensure_lazy()
   local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
   if not vim.uv.fs_stat(lazypath) then
