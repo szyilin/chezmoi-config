@@ -22,17 +22,9 @@ function M.setup()
   require "core.mappings"
 
   -- Load VSCode profile-specific configurations
-  if pcall(require, "profiles.vscode.options") then
-    require("profiles.vscode.options").setup()
-  end
-
-  if pcall(require, "profiles.vscode.autocmds") then
-    require("profiles.vscode.autocmds").setup()
-  end
-
-  if pcall(require, "profiles.vscode.keymaps") then
-    require("profiles.vscode.keymaps").setup()
-  end
+  require("profiles.vscode.options").setup()
+  require("profiles.vscode.autocmds").setup()
+  require("profiles.vscode.keymaps").setup()
 end
 
 return M
