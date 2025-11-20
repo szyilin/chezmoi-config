@@ -1,5 +1,6 @@
 local M = {}
 
+-- todo-comments 配置
 M.todo_comments = {
   -- keywords recognized as todo comments
   keywords = {
@@ -19,5 +20,8 @@ M.todo_comments = {
   },
 
 }
+
+-- nvim-tree 配置
+M.nvim_tree = {}
 
 return M

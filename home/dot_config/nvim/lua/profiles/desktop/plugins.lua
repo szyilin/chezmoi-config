@@ -19,4 +19,10 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
     opts = require("profiles.desktop.configs.other").todo_comments,
   },
+
+  -- nvim-tree 配置
+  {
+    "nvim-tree/nvim-tree.lua",
+    opts = require("profiles.desktop.configs.other").nvim_tree,
+  },
 }
