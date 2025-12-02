@@ -1,6 +1,21 @@
 #!/usr/bin/env zsh
 # ~/.config/zsh/init.zsh
-# 个人 Zsh 配置 - 无 chezmoi 依赖，完全可移植
+# =============================================================================
+# vim model config
+# =============================================================================
+bindkey -v # 将默认 emacs 模式变为 vim 模式
+# 插入模式下恢复 Ctrl 系列快捷键（保持 Emacs 行编辑体验）
+bindkey -M viins '^A' beginning-of-line
+bindkey -M viins '^E' end-of-line
+bindkey -M viins '^F' forward-char
+bindkey -M viins '^B' backward-char
+bindkey -M viins '^K' kill-line
+bindkey -M viins '^U' backward-kill-line
+bindkey -M viins '^W' backward-kill-word
+bindkey -M viins '^H' backward-delete-char
+bindkey -M viins '^D' delete-char
+bindkey -M viins '^N' down-line-or-history
+bindkey -M viins '^P' up-line-or-history
 
 # =============================================================================
 # 私有辅助函数
@@ -34,6 +49,13 @@ _load_if_command() {
     local cmd="$1"
     shift
     command -v "$cmd" >/dev/null 2>&1 && eval "$@"
+}
+
+# 如果命令存在运行命令，并运行命令的返回结果
+_load_if_command_source_result() {
+    local cmd="$1"
+    shift
+    command -v "$cmd" >/dev/null 2>&1 && source <("$cmd" "$@")
 }
 
 # =============================================================================
@@ -171,6 +193,14 @@ fi
 # =============================================================================
 # 自动执行
 # =============================================================================
+
+# =============================================================================
+# TODO: 待整理内容
+# =============================================================================
+
+# fzf 终端搜索配置
+_load_if_command_source_result() fzf --zsh
+
 
 # 启动时自动开启代理
 proxy_on
