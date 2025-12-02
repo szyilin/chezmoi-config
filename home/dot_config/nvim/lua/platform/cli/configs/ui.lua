@@ -15,6 +15,7 @@ M.snacks = {
           ["<C-l>"] = { "preview_scroll_right", mode = { "i", "n" } },
           ["<C-j>"] = { "preview_scroll_down", mode = { "i", "n" } },
           ["<C-k>"] = { "preview_scroll_up", mode = { "i", "n" } },
+          ["<tab>"] = { "cycle_win", mode = { "i", "n" } },
           ["<C-a>"] = false,
           ["<C-f>"] = false,
           ["<C-b>"] = false,
@@ -28,6 +29,7 @@ M.snacks = {
           ["<C-l>"] = "preview_scroll_right",
           ["<C-j>"] = "preview_scroll_down",
           ["<C-k>"] = "preview_scroll_up",
+          ["<tab>"] = "cycle_win",
           ["<C-a>"] = false,
           ["<C-f>"] = false,
           ["<C-b>"] = false,
@@ -37,6 +39,7 @@ M.snacks = {
       preview = {
         keys = {
           ["<C-c>"] = "cancel",
+          ["<tab>"] = "cycle_win",
         }
       }
     },

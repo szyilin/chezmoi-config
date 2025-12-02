@@ -19,6 +19,12 @@
       "fd": {
         "default": true
       },
+      "fzf": {
+        "default": true
+      },
+      "yazi": {
+        "default": true
+      },
       "daipeihust/tap/im-select": {
         "default": true
       },
