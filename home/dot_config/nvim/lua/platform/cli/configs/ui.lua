@@ -13,6 +13,11 @@ M.snacks = {
           ["<C-c>"] = { "cancel", mode = { "i", "n" } },
           ["<C-h>"] = { "preview_scroll_left", mode = { "i", "n" } },
           ["<C-l>"] = { "preview_scroll_right", mode = { "i", "n" } },
+          ["<C-j>"] = { "preview_scroll_down", mode = { "i", "n" } },
+          ["<C-k>"] = { "preview_scroll_up", mode = { "i", "n" } },
+          ["<C-a>"] = false,
+          ["<C-f>"] = false,
+          ["<C-b>"] = false,
         }
       },
       -- result list window
@@ -21,6 +26,11 @@ M.snacks = {
           ["<C-c>"] = "cancel",
           ["<C-h>"] = "preview_scroll_left",
           ["<C-l>"] = "preview_scroll_right",
+          ["<C-j>"] = "preview_scroll_down",
+          ["<C-k>"] = "preview_scroll_up",
+          ["<C-a>"] = false,
+          ["<C-f>"] = false,
+          ["<C-b>"] = false,
         }
       },
       -- preview window

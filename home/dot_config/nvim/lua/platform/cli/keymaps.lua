@@ -38,10 +38,10 @@ local function _fun_win_keys()
   end, { desc = "Explorer Reveal" })
 
   -- 调整窗口大小
-  util.nmap("<a-k>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
-  util.nmap("<a-j>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
-  util.nmap("<a-h>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
-  util.nmap("<a-l>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
+  util.nmap("<c-=>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
+  util.nmap("<c-->", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
+  util.nmap("<c-,>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
+  util.nmap("<c-.>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
 
   -- 移除 LazyVim 默认配置
   vim.keymap.del("n", "L")
