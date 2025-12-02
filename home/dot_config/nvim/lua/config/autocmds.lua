@@ -7,8 +7,4 @@
 -- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
 -- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
 
--- 在插入模式退出时自动保存
-vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
-  pattern = "*",
-  command = "silent! w"
-})
+-- 空文件展位，因为 LazyVim 会自动加载这些文件，所以需要一个空文件来占位，需要配置真正内容请去 相应的 platform 中进行配置

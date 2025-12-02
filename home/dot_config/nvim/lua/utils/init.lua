@@ -1,4 +1,4 @@
-M = {}
+local M = {}
 
 -----------------------------------------------------------
 -- 定义简化版映射函数                                    --
@@ -37,6 +37,15 @@ M.initLazy = function()
     end
   end
   vim.opt.rtp:prepend(lazypath)
+end
+
+-----------------------------------------------------------
+-- 封装 lazy.nvim 初始化入口                              --
+-----------------------------------------------------------
+---@param opts table lazy.nvim 的配置表（直接传入 lazy.setup）
+M.setupLazy = function(opts)
+  M.initLazy()
+  require("lazy").setup(opts)
 end
 
 -----------------------------------------------------------
