@@ -132,7 +132,7 @@ else
 fi
 
 # Tmux 别名
-_load_if_command tmux 'alias tmux="tmux -f ~/.config/tmux/.tmux.conf"'
+_load_if_command tmux 'alias tmux="tmux -f ~/.config/tmux/tmux.conf"'
 
 # =============================================================================
 # 函数定义
@@ -199,8 +199,12 @@ fi
 # =============================================================================
 
 # fzf 终端搜索配置
-_load_if_command_source_result() fzf --zsh
+_load_if_command_source_result fzf --zsh
 
+# 只在交互式 TTY 且不是脚本/IDE 调用时自动进入 tmux
+if [[ -t 1 ]] && [[ $- == *i* ]] && [ -z "$TMUX" ] && [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
+  tmux attach -t ${tmux_session:-main} || tmux new -s ${tmux_session:-main}
+fi
 
 # 启动时自动开启代理
 proxy_on
