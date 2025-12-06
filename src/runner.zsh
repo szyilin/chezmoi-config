@@ -21,7 +21,6 @@ DEFAULT_MODULES=(
     "homebrew-init" # Homebrew 软件包安装 (所有系统)
     "chezmoi-setup" # Chezmoi 完整设置流程 (所有系统)
     "oh-my-zsh"     # Oh My Zsh 终端美化 (所有系统)
-    "tmux-tpm"      # Tmux Plugin Manager (所有系统)
 )
 
 # 获取模块描述 (通用函数，完全兼容 bash 和 zsh)
@@ -33,7 +32,6 @@ get_module_description() {
         "homebrew-init") echo "Homebrew 软件包安装" ;;
         "chezmoi-setup") echo "Chezmoi 完整设置流程" ;;
         "oh-my-zsh") echo "Oh My Zsh 终端美化" ;;
-        "tmux-tpm") echo "Tmux Plugin Manager" ;;
         *) echo "$1" ;;
     esac
 }
