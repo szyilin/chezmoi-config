@@ -28,13 +28,19 @@
       "daipeihust/tap/im-select": {
         "default": true
       },
-      "ffmpeg": {
-        "default": false
+      "lazygit": {
+        "default": true
       },
-      "mysql-client@8.0": {
-        "default": false
+      "rsync": {
+        "default": true
       },
       "nvm": {
+        "default": true
+      },
+      "tmux": {
+        "default": true
+      },
+      "mysql-client@8.0": {
         "default": false
       },
       "pyenv": {
@@ -44,9 +50,6 @@
         "default": false
       },
       "rustup": {
-        "default": false
-      },
-      "tmux": {
         "default": false
       }
     }
