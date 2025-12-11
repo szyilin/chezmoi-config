@@ -2,8 +2,3 @@
 [[ -f ~/.config/zsh/init.zsh ]] && source ~/.config/zsh/init.zsh
 # ============================================= 个人配置加载 end   =================================================
 
-# Added by Antigravity
-export PATH="~/.antigravity/antigravity/bin:$PATH"
-
-# Added by Antigravity
-export PATH="~/.antigravity/antigravity/bin:$PATH"
