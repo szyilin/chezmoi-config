@@ -72,7 +72,7 @@ if _is_macos; then
 elif _is_linux; then
     export BREW_HOME="/home/linuxbrew/.linuxbrew"
 fi
-[[ -n "$BREW_HOME" ]] && export PATH="$PATH:$BREW_HOME/bin"
+[[ -n "$BREW_HOME" ]] && export PATH="$BREW_HOME/bin:$PATH"
 
 # Node.js (nvm) - 按需加载
 export NVM_DIR="$HOME/.nvm"
