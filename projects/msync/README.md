@@ -1,12 +1,10 @@
 msync
 =====
 
-Personal CLI (Rust) to sync/upload local build artifacts to servers using
-config-driven rsync. Designed to keep workflows keyboard-only with profile-based
-paths and optional tab completion.
+这是一个用 Rust 编写的个人命令行工具，基于配置文件和 rsync 实现本地构建产物到服务器的同步/上传。旨在通过配置化和快捷命令，让上传流程全键盘操作，高效便捷，并支持多环境/多目标上传。
 
-Planned capabilities (initial draft):
-- Read profiles (src/dst/flags) from a config file.
-- `msync upload -u <profile>` for one-command uploads; overrides for ad-hoc src/dst.
-- Progress output via rsync; optional dry-run, include/exclude, delete.
-- Shell completion generation (zsh/bash/fish).
+计划特性（初版）：
+- 通过配置文件定义多组同步 profile（源路径/目标路径/附加参数）。
+- 提供如 `msync upload -u <profile>` 的一键上传命令，也支持临时覆盖 src/dst。
+- 显示 rsync 过程进度，支持 dry-run、包含/排除、删除等常用选项。
+- 自动生成 shell 补全脚本（zsh/bash/fish）。
