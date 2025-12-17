@@ -103,6 +103,9 @@ else
     export EDITOR=vim
 fi
 
+# XDG 规范路径
+export XDG_CONFIG_HOME="$HOME/.config"
+
 # 确保 PATH 导出
 export PATH
 

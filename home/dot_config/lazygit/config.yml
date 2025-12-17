@@ -1,0 +1,5 @@
+keybinding:
+  universal:
+    # Use Ctrl+n/Ctrl+p to move selection down/up (vim-style)
+    nextItem: <c-n>
+    prevItem: <c-p>
