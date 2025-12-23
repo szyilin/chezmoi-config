@@ -40,17 +40,17 @@
       "tmux": {
         "default": true
       },
-      "mysql-client@8.0": {
-        "default": false
-      },
       "pyenv": {
-        "default": false
+        "default": true
       },
-      "ripgrep": {
-        "default": false
+      "mysql-client@8.0": {
+        "default": true
       },
       "rustup": {
-        "default": false
+        "default": true
+      },
+      "ripgrep": {
+        "default": true
       }
     }
   },
