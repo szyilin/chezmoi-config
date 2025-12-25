@@ -19,16 +19,19 @@
       "fd": {
         "default": true
       },
+      "daipeihust/tap/im-select": {
+        "default": true
+      },
       "fzf": {
         "default": true
       },
       "yazi": {
         "default": true
       },
-      "daipeihust/tap/im-select": {
+      "lazygit": {
         "default": true
       },
-      "lazygit": {
+      "tmux": {
         "default": true
       },
       "rsync": {
@@ -37,10 +40,10 @@
       "nvm": {
         "default": true
       },
-      "tmux": {
+      "pyenv": {
         "default": true
       },
-      "pyenv": {
+      "uv": {
         "default": true
       },
       "mysql-client@8.0": {
