@@ -87,6 +87,7 @@ if _is_macos; then
     _load_dir_to_path "${HOME}/.local/share/java/jdk21/Contents/Home" "JAVA_HOME"
     _load_dir_to_path "/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3" "MAVEN_HOME"
     _load_dir_to_path "${BREW_HOME}/Cellar/mysql-client@8.0/8.0.41" "MYSQL_HOME"
+    _load_dir_to_path "${HOME}/.local/share/golang/go1.23.9" "GOLANG_HOME"
 fi
 
 # Python (pyenv) - 按需加载
