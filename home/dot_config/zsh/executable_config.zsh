@@ -80,19 +80,19 @@ _load_file "$BREW_HOME/opt/nvm/nvm.sh"
 _load_file "$BREW_HOME/opt/nvm/etc/bash_completion.d/nvm"
 
 # Rust 环境 - 按需加载
-_load_file "$HOME/.cargo/env"
+_load_file "${HOME}/.cargo/env"
 
 # Java 开发环境（仅 macOS，按需加载）
 if _is_macos; then
-    _load_dir_to_path "/usr/local/java/jdk8/Contents/Home" "JAVA_HOME"
+    _load_dir_to_path "${HOME}/.local/share/java/jdk21/Contents/Home" "JAVA_HOME"
     _load_dir_to_path "/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3" "MAVEN_HOME"
-    _load_dir_to_path "/opt/homebrew/Cellar/mysql-client@8.0/8.0.41" "MYSQL_HOME"
+    _load_dir_to_path "${BREW_HOME}/Cellar/mysql-client@8.0/8.0.41" "MYSQL_HOME"
 fi
 
 # Python (pyenv) - 按需加载
-if [[ -d "$HOME/.pyenv" ]]; then
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/bin:$PATH"
+if [[ -d "${HOME}/.pyenv" ]]; then
+    export PYENV_ROOT="${HOME}/.pyenv"
+    export PATH="${PYENV_ROOT}/bin:${PATH}"
     _load_if_command pyenv 'eval "$(pyenv init - zsh)"'
 fi
 
@@ -104,7 +104,7 @@ else
 fi
 
 # XDG 规范路径
-export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CONFIG_HOME="${HOME}/.config"
 
 # 确保 PATH 导出
 export PATH
