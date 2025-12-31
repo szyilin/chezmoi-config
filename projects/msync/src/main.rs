@@ -1,247 +1,227 @@
-use std::collections::HashMap;
-use std::env;
-use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::fs;
+use std::io::{self, Write};
+use std::path::PathBuf;
 
-use anyhow::{Context, Result, anyhow};
-use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand, value_parser};
-use clap_complete::{Shell, generate};
-use serde::Deserialize;
+use clap::{Arg, Command};
+use clap_complete::{
+    generate,
+    shells::{Bash, Fish, Zsh},
+};
 
-#[derive(Debug, Deserialize)]
-struct Profile {
-    src: Option<String>,
-    dst: Option<String>,
-    #[serde(default)]
-    flags: Vec<String>,
+/// 构建顶层 CLI 定义
+fn build_cli() -> Command {
+    Command::new("msync")
+        .about("A simple sync/upload helper tool")
+        .subcommand_required(false)
+        .arg_required_else_help(true)
+        // 示例子命令：未来可以在这里扩展 upload / config 等
+        .subcommand(
+            Command::new("upload")
+                .about("Upload/sync project artifacts")
+                .arg(
+                    Arg::new("profile")
+                        .short('p')
+                        .long("profile")
+                        .help("Profile name defined in config")
+                        .required(false)
+                        .num_args(1),
+                ),
+        )
+        // 用于生成补全脚本的子命令： msync completions <shell>
+        .subcommand(
+            Command::new("completions")
+                .about("Generate shell completion script")
+                .arg(
+                    Arg::new("shell")
+                        .help("Shell type: bash / zsh / fish")
+                        .required(true)
+                        .value_parser(["bash", "zsh", "fish"]),
+                ),
+        )
+        // 自动安装补全脚本的子命令： msync install-completions
+        .subcommand(
+            Command::new("install-completions")
+                .about("Automatically install shell completion script for current shell")
+                .arg(
+                    Arg::new("shell")
+                        .help("Shell type: bash / zsh / fish (auto-detect if not specified)")
+                        .required(false)
+                        .value_parser(["bash", "zsh", "fish"]),
+                ),
+        )
+        // 卸载补全脚本的子命令： msync uninstall-completions
+        .subcommand(
+            Command::new("uninstall-completions")
+                .about("Remove installed shell completion scripts")
+                .arg(
+                    Arg::new("shell")
+                        .help("Shell type: bash / zsh / fish (remove all if not specified)")
+                        .required(false)
+                        .value_parser(["bash", "zsh", "fish"]),
+                ),
+        )
 }
 
-#[derive(Debug, Deserialize)]
-struct Config {
-    #[serde(flatten)]
-    profiles: HashMap<String, Profile>,
+/// 检测当前 shell 类型
+fn detect_shell() -> Option<&'static str> {
+    // 优先检查 SHELL 环境变量
+    if let Ok(shell) = std::env::var("SHELL") {
+        if shell.contains("zsh") {
+            return Some("zsh");
+        } else if shell.contains("bash") {
+            return Some("bash");
+        } else if shell.contains("fish") {
+            return Some("fish");
+        }
+    }
+    
+    // 检查父进程名称（备用方案）
+    if let Ok(ppid) = std::process::Command::new("ps")
+        .args(["-p", &std::os::unix::process::parent_id().to_string(), "-o", "comm="])
+        .output()
+    {
+        let parent = String::from_utf8_lossy(&ppid.stdout).trim().to_lowercase();
+        if parent.contains("zsh") {
+            return Some("zsh");
+        } else if parent.contains("bash") {
+            return Some("bash");
+        } else if parent.contains("fish") {
+            return Some("fish");
+        }
+    }
+    
+    None
 }
 
-#[derive(Parser, Debug)]
-#[command(name = "msync", version, about = "基于配置的 rsync 上传工具")]
-struct Cli {
-    /// 配置文件路径（默认：$XDG_CONFIG_HOME/msync/profiles.json）
-    #[arg(short, long, value_name = "FILE", value_parser = value_parser!(PathBuf))]
-    config: Option<PathBuf>,
-
-    #[command(subcommand)]
-    command: Commands,
+/// 获取补全脚本的目标路径
+fn get_completion_path(shell: &str) -> anyhow::Result<PathBuf> {
+    let home = std::env::var("HOME")
+        .map_err(|_| anyhow::anyhow!("HOME environment variable not set"))?;
+    
+    let path = match shell {
+        "zsh" => {
+            // zsh: ~/.zsh/completions/ 或 ~/.zfunc/
+            let dirs = [
+                format!("{}/.zsh/completions", home),
+                format!("{}/.zfunc", home),
+                format!("{}/.local/share/zsh/site-functions", home),
+            ];
+            
+            // 找到第一个存在的目录，或使用第一个目录
+            let dir = dirs.iter()
+                .find(|d| PathBuf::from(d).exists())
+                .unwrap_or(&dirs[0]);
+            
+            PathBuf::from(dir).join("_msync")
+        }
+        "bash" => {
+            // bash: ~/.bash_completion.d/ 或系统目录
+            let dirs = [
+                format!("{}/.bash_completion.d", home),
+                format!("{}/.local/share/bash-completion/completions", home),
+            ];
+            
+            let dir = dirs.iter()
+                .find(|d| PathBuf::from(d).exists())
+                .unwrap_or(&dirs[0]);
+            
+            PathBuf::from(dir).join("msync")
+        }
+        "fish" => {
+            // fish: ~/.config/fish/completions/
+            PathBuf::from(format!("{}/.config/fish/completions", home)).join("msync.fish")
+        }
+        _ => return Err(anyhow::anyhow!("Unsupported shell: {}", shell)),
+    };
+    
+    Ok(path)
 }
 
-#[derive(Subcommand, Debug)]
-enum Commands {
-    /// 使用指定 profile 上传
-    Upload(UploadArgs),
-    /// 列出可用的 profile
-    List,
-    /// 查看 profile 详细信息
-    Show {
-        /// profile 名称（省略则显示全部）
-        profile: Option<String>,
-    },
-    /// 生成 shell 补全脚本
-    Completion {
-        #[arg(value_enum)]
-        shell: Shell,
-    },
+/// 安装补全脚本
+fn install_completions(cmd: &mut Command, shell: Option<&str>) -> anyhow::Result<()> {
+    let shell = shell
+        .or_else(detect_shell)
+        .ok_or_else(|| anyhow::anyhow!("Cannot detect shell. Please specify with --shell option"))?;
+    
+    println!("Detected shell: {}", shell);
+    
+    let completion_path = get_completion_path(shell)?;
+    let completion_dir = completion_path.parent()
+        .ok_or_else(|| anyhow::anyhow!("Invalid completion path"))?;
+    
+    // 创建目录（如果不存在）
+    fs::create_dir_all(completion_dir)?;
+    
+    // 生成补全脚本内容
+    let mut buffer = Vec::new();
+    match shell {
+        "bash" => generate(Bash, cmd, "msync", &mut buffer),
+        "zsh" => generate(Zsh, cmd, "msync", &mut buffer),
+        "fish" => generate(Fish, cmd, "msync", &mut buffer),
+        _ => return Err(anyhow::anyhow!("Unsupported shell: {}", shell)),
+    }
+    
+    // 写入文件
+    fs::write(&completion_path, buffer)?;
+    
+    println!("✓ Completion script installed to: {}", completion_path.display());
+    
+    // 给出后续提示
+    match shell {
+        "zsh" => {
+            println!("\nTo enable completions, add this to your ~/.zshrc:");
+            println!("  fpath=({} $fpath)", completion_dir.display());
+            println!("  autoload -Uz compinit && compinit");
+            println!("\nOr restart your shell and run: compinit");
+        }
+        "bash" => {
+            println!("\nTo enable completions, add this to your ~/.bashrc:");
+            println!("  source {}", completion_path.display());
+            println!("\nOr restart your shell.");
+        }
+        "fish" => {
+            println!("\nFish completions are automatically loaded. Restart your shell to use them.");
+        }
+        _ => {}
+    }
+    
+    Ok(())
 }
 
-#[derive(Args, Debug)]
-struct UploadArgs {
-    /// 要使用的 profile 名称
-    #[arg(short = 'u', long = "profile")]
-    profile: String,
-    /// 覆盖源路径
-    #[arg(long, value_name = "PATH")]
-    src: Option<PathBuf>,
-    /// 覆盖目标路径（如 user@host:/path/）
-    #[arg(long, value_name = "DEST")]
-    dst: Option<String>,
-    /// 透传给 rsync 的附加参数，写在 `--` 之后，如 -- --delete --exclude node_modules
-    #[arg(trailing_var_arg = true, action = ArgAction::Append)]
-    rsync_args: Vec<String>,
-}
+fn main() -> anyhow::Result<()> {
+    let mut cmd = build_cli();
+    let matches = cmd.clone().get_matches();
 
-fn main() -> Result<()> {
-    let cli = Cli::parse();
-    match cli.command {
-        Commands::Completion { shell } => {
-            let mut cmd = Cli::command();
-            generate(shell, &mut cmd, "msync", &mut std::io::stdout());
-            Ok(())
+    match matches.subcommand() {
+        Some(("completions", sub_m)) => {
+            let shell = sub_m
+                .get_one::<String>("shell")
+                .expect("shell is required")
+                .as_str();
+
+            let mut stdout = io::stdout();
+            match shell {
+                "bash" => generate(Bash, &mut cmd, "msync", &mut stdout),
+                "zsh" => generate(Zsh, &mut cmd, "msync", &mut stdout),
+                "fish" => generate(Fish, &mut cmd, "msync", &mut stdout),
+                _ => unreachable!("clap value_parser 保证了只会是三种之一"),
+            }
+        }
+        Some(("install-completions", sub_m)) => {
+            let shell = sub_m.get_one::<String>("shell").map(|s| s.as_str());
+            install_completions(&mut cmd, shell)?;
+        }
+        Some(("upload", _sub_m)) => {
+            // 之后在这里实现真正的 upload 逻辑
+            println!("upload command is not implemented yet");
         }
         _ => {
-            let cfg_path = resolve_config_path(cli.config.as_deref())?;
-            let cfg = load_config(&cfg_path)?;
-            run_command(cli.command, cfg)
-        }
-    }
-}
-
-fn resolve_config_path(override_path: Option<&Path>) -> Result<PathBuf> {
-    if let Some(p) = override_path {
-        return Ok(p.to_path_buf());
-    }
-    if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
-        let p = Path::new(&xdg).join("msync").join("profiles.json");
-        return Ok(p);
-    }
-    let home = env::var("HOME").context("HOME not set and no config path provided")?;
-    Ok(Path::new(&home)
-        .join(".config")
-        .join("msync")
-        .join("profiles.json"))
-}
-
-fn load_config(path: &Path) -> Result<Config> {
-    let content = std::fs::read_to_string(path)
-        .with_context(|| format!("failed to read config file {}", path.display()))?;
-    let cfg: Config = serde_json::from_str(&content)
-        .with_context(|| format!("invalid JSON in {}", path.display()))?;
-    Ok(cfg)
-}
-
-fn run_command(command: Commands, cfg: Config) -> Result<()> {
-    match command {
-        Commands::Upload(args) => do_upload(args, cfg),
-        Commands::List => {
-            for key in cfg.profiles.keys() {
-                println!("{key}");
-            }
-            Ok(())
-        }
-        Commands::Show { profile } => {
-            if let Some(name) = profile {
-                let Some(p) = cfg.profiles.get(&name) else {
-                    return Err(anyhow!("profile `{name}` not found"));
-                };
-                println!("{name}:");
-                println!("  src: {}", p.src.as_deref().unwrap_or("<unset>"));
-                println!("  dst: {}", p.dst.as_deref().unwrap_or("<unset>"));
-                if p.flags.is_empty() {
-                    println!("  flags: <none>");
-                } else {
-                    println!("  flags: {}", p.flags.join(" "));
-                }
-            } else {
-                for (k, p) in cfg.profiles.iter() {
-                    println!(
-                        "{k}: src={} dst={}",
-                        p.src.as_deref().unwrap_or("<unset>"),
-                        p.dst.as_deref().unwrap_or("<unset>")
-                    );
-                }
-            }
-            Ok(())
-        }
-        Commands::Completion { .. } => unreachable!("handled earlier"),
-    }
-}
-
-fn do_upload(args: UploadArgs, cfg: Config) -> Result<()> {
-    let profile = cfg
-        .profiles
-        .get(&args.profile)
-        .ok_or_else(|| anyhow!("profile `{}` not found", args.profile))?;
-
-    let src = args
-        .src
-        .map(|p| p.to_string_lossy().to_string())
-        .or_else(|| profile.src.clone())
-        .ok_or_else(|| anyhow!("profile `{}` has no src; provide --src", args.profile))?;
-    let dst = args
-        .dst
-        .or_else(|| profile.dst.clone())
-        .ok_or_else(|| anyhow!("profile `{}` has no dst; provide --dst", args.profile))?;
-
-    let progress_arg = pick_progress_arg();
-
-    let mut base_args = vec!["-avz".to_string(), progress_arg.clone()];
-    base_args.extend(profile.flags.clone());
-    base_args.extend(args.rsync_args.clone());
-    base_args.push(src);
-    base_args.push(dst);
-
-    run_rsync(base_args, progress_arg)
-}
-
-fn pick_progress_arg() -> String {
-    match rsync_supports_progress2() {
-        true => "--info=progress2".to_string(),
-        false => "-P".to_string(), // 等价于 --partial 和 --progress
-    }
-}
-
-fn rsync_supports_progress2() -> bool {
-    let output = Command::new("rsync").arg("--version").output().ok();
-    if let Some(out) = output {
-        if let Ok(text) = String::from_utf8(out.stdout) {
-            if let Some(first) = text.lines().next() {
-                // 例如："rsync  version 3.2.7  protocol version 31"
-                let tokens: Vec<&str> = first.split_whitespace().collect();
-                let ver = tokens.iter().find_map(|t| parse_version(t));
-                if let Some((major, minor)) = ver {
-                    return major > 3 || (major == 3 && minor >= 1);
-                }
-            }
-        }
-    }
-    false
-}
-
-fn parse_version(token: &str) -> Option<(u32, u32)> {
-    let mut parts = token.split('.');
-    let major = parts.next()?.parse::<u32>().ok()?;
-    let minor = parts.next()?.parse::<u32>().ok()?;
-    Some((major, minor))
-}
-
-fn run_rsync(args: Vec<String>, progress_arg: String) -> Result<()> {
-    let mut cmd = Command::new("rsync");
-    cmd.args(&args);
-    cmd.stdin(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit());
-
-    let status = cmd.status().context("failed to invoke rsync")?;
-    if status.success() {
-        return Ok(());
-    }
-
-    // 如果 progress2 失败，退回到 --progress
-    if progress_arg == "--info=progress2" {
-        let mut fallback_args = args
-            .into_iter()
-            .map(|a| {
-                if a == "--info=progress2" {
-                    "--progress".to_string()
-                } else {
-                    a
-                }
-            })
-            .collect::<Vec<_>>();
-        // 确保有进度参数
-        if !fallback_args.iter().any(|a| a == "--progress" || a == "-P") {
-            fallback_args.insert(1, "--progress".to_string());
-        }
-        let mut fallback = Command::new("rsync");
-        fallback
-            .args(&fallback_args)
-            .stdin(Stdio::inherit())
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit());
-        let status2 = fallback
-            .status()
-            .context("failed to invoke rsync (fallback)")?;
-        if status2.success() {
-            return Ok(());
+            // 没有子命令时，打印帮助
+            cmd.print_help()?;
+            println!();
         }
     }
 
-    Err(anyhow!("rsync failed"))
+    Ok(())
 }
+

@@ -54,6 +54,9 @@
       },
       "ripgrep": {
         "default": true
+      },
+      "go": {
+        "default": true
       }
     }
   },
