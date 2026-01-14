@@ -5,6 +5,8 @@ Plug 'preservim/nerdtree'
 Plug 'tpope/vim-surround' " ys, cs, ds, S, 字体环绕
 Plug 'vim-commentary' " 使用 gcc 注释单行 gc 注释选中的多行注释
 Plug 'argtextobj.vim' " Text Object 模式添加 a 模式表示选中一整个参数
+Plug 'michaeljsmith/vim-indent-object' " Text Object 模式添加 i 模式表示选中Python中的缩进块
+set textobj-indent
 Plug 'machakann/vim-highlightedyank' " 当复制后被复制内容会有短暂延迟光亮
 Plug 'vim-scripts/Improved-paragraph-motion' " 使用 { } 可以匹配带有空格的空行
 set which-key " 按键提示插件
