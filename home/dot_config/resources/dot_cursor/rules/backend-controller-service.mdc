@@ -1,0 +1,217 @@
+---
+description: 后端Controller和Service层开发规范
+globs: ["**/*Controller.java", "**/*Service.java"]
+alwaysApply: false
+---
+
+# 后端Controller和Service层开发规范
+
+## 概述
+
+本规范用于指导后端Controller和Service层的开发，确保代码风格统一、结构清晰、可维护性强。
+
+## 1. Controller层规范
+
+### 1.1 基本结构
+- Controller类需标注`@RestController`和`@RequestMapping`
+- 使用依赖注入（`@Resource`、`@Autowired`等）注入Service依赖
+- 所有接口方法返回统一的响应包装类型（注意：根据项目实际情况使用，如`Result<T>`、`ResponseEntity<T>`等）
+- 使用`@Valid`或`@Validated`注解对请求参数进行校验
+
+### 1.2 接口设计原则
+- **接口风格统一**: 遵循项目现有Controller的编码风格，保持整体代码风格一致
+- **接口层VO对象分离**: **Controller接口层**的请求VO和响应VO必须严格分开创建，不可共用同一个VO对象
+  - **原因**: 请求VO需要添加校验注解（如`@NotNull`、`@NotBlank`、`@Size`等），而响应VO不需要这些注解。如果混用会导致校验注解污染响应对象，代码混乱且难以维护
+  - 请求VO命名规范: `{Entity}CreateReqVO`、`{Entity}UpdateReqVO`、`{Entity}ListReqVO`等
+  - 响应VO命名规范: `{Entity}RespVO`、`{Entity}DetailVO`等
+  - 示例命名模式: `{Entity}CreateReqVO`（创建请求）、`{Entity}UpdateReqVO`（更新请求）、`{Entity}RespVO`（响应）
+- **Service层VO使用**: 在Service层内部，如果业务逻辑简单且字段基本相同，可以根据实际情况复用VO对象，但**接口层的VO必须严格分离**
+- **关联查询返回规范（强制性）**: 在生成返回信息时，**不要只看返回对应表的字段**，需要综合考虑前端展示需求
+  - **关联字段判断**: 如果响应VO中包含关联关系ID字段（如`userId`、`orderId`、`categoryId`等），需要判断前端展示是否需要该关联实体的详细信息
+  - **Info对象设计**: 如果前端需要展示关联实体的详细信息，应在ID字段下方添加对应的Info对象字段，命名规范为`{关联实体名}Info`（如`userInfo`、`orderInfo`、`categoryInfo`等）
+  - **业务层填充**: 在Service层的查询方法中，需要根据业务需求填充这些Info对象，而不是只返回ID字段
+  - **示例**: 如果订单响应VO包含`userId`字段，且前端需要显示用户姓名、头像等信息，则应在响应VO中添加`userInfo`对象，并在Service层查询并填充该对象
+
+### 1.3 Controller职责
+- Controller层只负责接收请求、参数校验、调用Service、返回响应
+- **不包含业务逻辑**: 所有业务逻辑应在Service层实现
+- Controller方法应简洁，通常只有3-5行代码
+
+### 1.4 API接口文档描述
+- **优先检测项目文档系统**: 在编写接口文档时，先检测项目中是否配置了API文档系统（如OpenAPI、Swagger、SpringDoc等）
+  - 如果项目已配置文档系统，使用该系统的注解或配置方式进行接口描述（如`@Api`、`@ApiOperation`、`@Operation`等，根据项目实际使用的框架版本选择对应的注解）
+  - 如果项目未配置文档系统，则使用Java注释（如`/** */`或`//`）进行接口描述
+- **文档详细程度**: 
+  - 使用文档系统时，建议添加完整的接口描述、参数说明、返回值说明等，以便生成完整的API文档
+  - 使用Java注释时，保持简洁明了即可，后端开发者能理解接口用途即可，无需过于详细的说明
+- **遵循项目规范**: 确保接口文档的描述方式与项目中其他Controller保持一致
+
+## 2. Service层规范
+
+### 2.1 基本要求
+- 每个Controller都应有对应的Service类
+- 如果项目中有基础Service类（如`AbstractBaseService`、`BaseService`等），应继承该类以复用公共方法
+- 使用`@Service`注解标注
+- 业务方法中涉及数据修改的操作使用`@Transactional`注解保证事务一致性
+
+### 2.2 业务逻辑组织
+- **业务逻辑统一在Service层**: Controller不处理业务逻辑
+- **数据校验独立方法**: 在业务逻辑开头进行数据合法校验，并将校验逻辑抽取到独立的私有方法中，提高可读性
+  - 校验方法命名: `validate{Entity}{Operation}`
+  - 示例: `validateSkuCreate`、`validateSkuUpdate`
+
+### 2.3 校验方法规范
+```java
+/**
+ * 校验实体创建
+ */
+private void validate{Entity}Create({Entity}CreateReqVO reqVO) {
+    // 校验唯一性约束（如编码、名称等）
+    // 校验业务规则
+    // 校验关联数据存在性
+    // 其他业务规则校验
+}
+```
+
+### 2.4 数据访问
+- 使用Dao/Mapper进行数据库操作
+- 在查询、更新、删除操作前，应校验数据是否存在（如项目中有基础Service类提供`isDataValidate()`等方法，请使用；否则自行实现校验逻辑）
+- 根据项目需求进行权限校验（如企业权限、用户权限等，如项目中有基础Service类提供相关校验方法，请使用）
+- 查询时根据项目需求设置权限过滤条件（如企业ID、用户ID等）
+
+## 3. 数据库相关类使用规范
+
+### 3.1 复用现有类
+- **不要重复创建**: 数据库相关的类（如Mapper接口、Mapper XML、Entity/Domain实体类、Dao接口等）通常已经创建，请在项目中查找并使用现有类
+- 查找位置（注意：根据项目实际结构查找）:
+  - Entity/Domain实体类: 通常在`entity`、`domain`、`model`等包下，或独立的模块中
+  - Mapper接口: 通常在`mapper`、`dao`等包下
+  - Mapper XML: 通常在`resources/mapper`或`resources/mybatis/mapper`等目录下
+  - Dao接口: 通常在`dao`包下，命名格式通常为`{Entity}Dao`或`{Entity}Mapper`
+
+### 3.2 如果确实需要创建新类
+- 仅在确认项目中没有相关类时才创建
+- 遵循项目现有的命名和结构规范
+
+## 4. 编码示例
+
+### Controller示例
+```java
+@RestController
+@RequestMapping("/api/{module}/{entity}")
+public class {Entity}Controller {
+
+    @Resource  // 或使用 @Autowired
+    private {Entity}Service {entity}Service;
+
+    @PostMapping
+    public {ResponseWrapper}<Void> create(@RequestBody @Valid {Entity}CreateReqVO reqVO) {
+        {entity}Service.create(reqVO);
+        return {ResponseWrapper}.ok();  // 根据项目实际响应类型调整
+    }
+
+    @GetMapping("/{id}")
+    public {ResponseWrapper}<{Entity}RespVO> getById(@PathVariable Long id) {
+        {Entity}RespVO result = {entity}Service.getById(id);
+        return {ResponseWrapper}.ok(result);
+    }
+}
+```
+
+**注意**: 
+- `{Entity}`、`{module}`等为占位符，需替换为实际的实体名称
+- `{ResponseWrapper}`需替换为项目实际的响应包装类（如`Result`、`ResponseEntity`等）
+- 根据项目实际情况调整依赖注入方式和响应返回方式
+
+### 响应VO示例（包含关联Info对象）
+```java
+public class {Entity}RespVO {
+    // 主实体字段
+    private Long id;
+    private String name;
+    // ... 其他主实体字段
+
+    // 关联ID字段
+    private Long {relatedEntity}Id;  // 例如: userId, orderId等
+
+    // 关联实体的Info对象（如果前端需要展示详细信息，必须添加）
+    private {RelatedEntity}Info {relatedEntity}Info;  // 例如: userInfo, orderInfo等
+}
+```
+
+**说明**:
+- 如果响应VO中包含关联ID字段（如`userId`），且前端需要展示关联实体的详细信息（如用户姓名、头像等），则必须添加对应的Info对象字段（如`userInfo`）
+- Info对象应包含前端展示所需的关键字段，不需要包含所有字段
+- 在Service层的查询方法中，需要查询关联实体并填充Info对象
+
+### Service示例
+```java
+@Service
+public class {Entity}Service extends {BaseService} {  // 如果项目有基础Service类
+
+    @Resource  // 或使用 @Autowired
+    private {Entity}Dao {entity}Dao;  // 或 {Entity}Mapper
+    
+    @Resource  // 关联实体的Dao，用于填充Info对象
+    private {RelatedEntity}Dao {relatedEntity}Dao;
+
+    @Transactional
+    public void create({Entity}CreateReqVO reqVO) {
+        // 1. 数据校验（抽取到独立方法）
+        validate{Entity}Create(reqVO);
+
+        // 2. 业务逻辑处理
+        {Entity} entity = {BeanUtil}.copyProperties(reqVO, {Entity}.class);
+        // 如果基础Service类提供了填充方法，使用它（如insertFill、setCreateFields等）
+        // 否则手动设置创建时间、创建人等字段
+        {entity}Dao.insertSelective(entity);  // 或使用 {entity}Mapper.insertSelective
+    }
+
+    public {Entity}RespVO getById(Long id) {
+        // 1. 查询主实体
+        {Entity} entity = {entity}Dao.selectByPrimaryKey(id);
+        if (entity == null) {
+            throw new {BusinessException}("数据不存在");
+        }
+
+        // 2. 转换为响应VO
+        {Entity}RespVO respVO = {BeanUtil}.copyProperties(entity, {Entity}RespVO.class);
+
+        // 3. 填充关联实体的Info对象（如果响应VO中包含关联ID且前端需要展示详细信息）
+        if (entity.get{RelatedEntity}Id() != null) {
+            {RelatedEntity} relatedEntity = {relatedEntity}Dao.selectByPrimaryKey(entity.get{RelatedEntity}Id());
+            if (relatedEntity != null) {
+                {RelatedEntity}Info info = {BeanUtil}.copyProperties(relatedEntity, {RelatedEntity}Info.class);
+                respVO.set{RelatedEntity}Info(info);
+            }
+        }
+
+        return respVO;
+    }
+
+    /**
+     * 校验实体创建
+     */
+    private void validate{Entity}Create({Entity}CreateReqVO reqVO) {
+        // 校验唯一性约束（如编码、名称等）
+        // 校验业务规则
+        // 校验关联数据存在性
+        // 其他业务规则校验
+    }
+}
+```
+
+**注意**:
+- `{Entity}`、`{BaseService}`等为占位符，需替换为实际类名
+- `{BeanUtil}`需替换为项目实际使用的工具类（如`BeanUtils`、`BeanUtil`等）
+- 根据项目实际情况调整数据访问方式和字段填充方式
+
+## 5. 注意事项
+
+1. **接口层VO对象分离**: Controller接口层的请求VO和响应VO必须严格分离，因为请求VO需要校验注解，响应VO不需要，混用会导致代码混乱
+2. **关联查询返回（强制性）**: 生成返回信息时，必须判断前端是否需要关联实体的详细信息。如果响应VO包含关联ID字段且前端需要展示详细信息，必须在ID字段下方添加对应的Info对象，并在Service层业务逻辑中填充该对象，避免前端需要额外请求获取关联信息
+3. **校验逻辑独立**: 将校验逻辑抽取到独立方法，提高代码可读性和可维护性
+4. **复用现有资源**: 在创建数据库相关类之前，务必先查找项目中是否已存在，避免重复创建
+5. **事务管理**: 涉及数据修改的操作必须使用`@Transactional`注解，确保数据一致性
+6. **权限校验**: 根据业务需求进行权限校验（如企业权限、用户权限等），使用项目提供的基础Service方法或自行实现
+7. **遵循项目规范**: 开发前请先了解项目的具体规范，包括命名规范、代码风格、工具类使用等，确保代码符合项目整体风格

@@ -1,0 +1,129 @@
+---
+description: 根据后端Controller自动生成前端API代码和AI文档
+globs: ["**/*.java"]
+alwaysApply: false
+---
+
+# API代码生成规则
+
+## 使用方式
+`@api-generate controller=ControllerName [options]`
+
+当您需要为后端接口生成前端调用代码时，使用此规则。系统会自动解析Spring Boot Controller，生成对应的JavaScript API函数和AI友好的文档。
+
+## 参数说明
+
+### controller (必填)
+- **格式**: `controller=ControllerClassName`
+- **说明**: 目标Controller类名，不需要包含包名
+- **示例**: `controller=SpecialController`
+
+### method (可选)
+- **格式**: `method=methodName`
+- **说明**: 指定Controller中的具体方法名。如果不指定，则生成该Controller中的所有接口
+- **示例**: `method=setDiscount`
+
+### outpath (可选)
+- **格式**: `outpath=相对路径/文件名.js`
+- **说明**: 输出文件的路径，相对于当前项目根目录。如果不指定，将在项目根目录下根据Controller名称自动命名
+- **默认**: `{ControllerName}.js` (去掉Controller后缀，转为小写)
+- **示例**: 
+  - `outpath=src/api/special.js`
+  - 不指定时：`SpecialController` → `special.js`
+
+### jsTemp (可选)
+- **格式**: `jsTemp="JavaScript模板代码"`
+- **说明**: 前端希望的JS代码样式模板，系统会按照此模板风格生成代码
+- **默认**: 使用项目标准的request工具类风格
+- **示例**: 
+```javascript
+jsTemp="
+import request from '@/utils/request';
+export const apiName = (data) => request.post('/api/path', data);
+"
+```
+
+## 生成内容
+
+### 1. 前端API调用函数
+- 根据Controller方法自动生成对应的JavaScript函数
+- 自动识别HTTP方法（GET、POST等）和请求路径
+- 支持@RequestBody、@RequestParam等不同参数类型
+- 保持与指定模板风格一致
+
+### 2. AI友好文档注释
+在生成的JS文件末尾添加详细的API文档注释，包含：
+- 接口路径和HTTP方法
+- 功能描述
+- 请求参数结构和类型说明
+- 响应结果格式
+- 请求示例（可选）
+
+### 3. 自动类型推断
+- 基于Java VO类自动推断JavaScript对象结构
+- 解析@NotNull、@NotBlank等验证注解，标明必填字段
+- 解析@ApiModelProperty等文档注解（如果存在）
+
+## 解析规则
+
+### Controller解析
+- 扫描@RestController和@Controller注解的类
+- 解析@RequestMapping、@PostMapping、@GetMapping等路径映射
+- 提取方法参数和返回值类型
+
+### 参数类型处理
+- **@RequestBody**: 生成data参数传递
+- **@RequestParam**: 生成query参数或单独参数
+- **@PathVariable**: 生成路径参数替换
+
+### VO类解析
+- 自动扫描方法参数中的VO类
+- 解析字段类型、验证注解、默认值
+- 生成对应的JavaScript对象结构说明
+
+## 使用示例
+
+```
+@api-generate controller=SpecialController outpath=src/api/special.js
+```
+
+将为SpecialController生成完整的前端API代码，输出到`src/api/special.js`
+
+```
+@api-generate controller=SpecialController method=setDiscount
+```
+
+只为SpecialController的setDiscount方法生成代码，输出到`special.js`
+
+## 注意事项
+
+1. **代码风格**: 生成的代码会尽量与项目现有前端代码风格保持一致
+2. **错误处理**: 包含标准的错误处理逻辑
+3. **文档同步**: 当后端接口变更时，重新运行规则即可更新前端代码
+4. **AI优化**: 生成的文档专门为前端AI工具优化，便于理解和使用
+
+## 输出文件结构
+
+```javascript
+// 导入部分
+import request from "@/utils/request";
+
+// API路径常量
+const api = {
+  methodName: "/api/path"
+};
+
+// 导出函数
+export function methodName(params) {
+  return request({
+    url: api.methodName,
+    method: "post",
+    data: params
+  });
+}
+
+/* 
+=== API DOCUMENTATION FOR AI ===
+详细的接口文档注释...
+*/
+```
