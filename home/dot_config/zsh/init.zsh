@@ -28,7 +28,7 @@ source "$ZSH_CONFIG_DIR/env/base.zsh"
 source "$ZSH_CONFIG_DIR/env/homebrew.zsh"
 # 自动启动配置（homebrew 加载完成后直接运行）只在交互式 TTY 且不是脚本/IDE 调用时自动进入 tmux
 if [[ -t 1 ]] && [[ $- == *i* ]] && [ -z "$TMUX" ] && [[ "$TERM_PROGRAM" == "iTerm.app" ]]; then
-    tmux attach -t ${tmux_session:-main} || tmux new -s ${tmux_session:-main}
+    tmux attach -t ${tmux_session:-main} || tmux new -s ${tmux_session:-main} -n def
 fi
 
 # 开发工具（依赖 Homebrew）
