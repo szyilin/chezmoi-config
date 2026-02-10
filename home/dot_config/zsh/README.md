@@ -36,10 +36,10 @@
 
 1. **core/** - 核心工具（平台检测、PATH 管理、加载机制）
 2. **env/** - 环境变量（base → homebrew → 开发工具 → editor）
-3. **plugins/** - Oh My Zsh 及插件
-4. **shell/** - Shell 行为配置
-5. **platform/** - 平台特定配置
-6. **local.zsh** - 本地配置（可选）
+3. **shell/** - Shell 行为配置
+4. **platform/** - 平台特定配置
+5. **local.zsh** - 本地配置（可选）
+6. **plugins/** - Oh My Zsh 及插件（最后加载，避免干扰环境）
 
 ## 依赖关系
 
@@ -52,13 +52,14 @@ env (依赖 core)
   ├─ node/python/rust/java (依赖 homebrew)
   └─ editor (依赖开发工具)
   ↓
-plugins (依赖 env)
-  ↓
-shell (依赖 plugins)
+shell (依赖 env)
   ↓
 platform (依赖 shell)
   ↓
 local (可选)
+  ↓
+plugins (最后加载，避免干扰)
+  └─ omz (Oh My Zsh)
 ```
 
 ## 性能优化
