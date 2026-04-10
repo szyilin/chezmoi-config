@@ -48,6 +48,7 @@ source "$ZSH_CONFIG_DIR/plugins/omz.zsh"
 # -----------------------------------------------------------------------------
 # Shell 配置（在 plugins 之后）
 # -----------------------------------------------------------------------------
+source "$ZSH_CONFIG_DIR/shell/history.zsh"
 source "$ZSH_CONFIG_DIR/shell/keybindings.zsh"
 source "$ZSH_CONFIG_DIR/shell/completions.zsh"
 source "$ZSH_CONFIG_DIR/shell/aliases.zsh"

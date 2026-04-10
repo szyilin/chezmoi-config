@@ -1,13 +1,13 @@
 # ============================================= 个人配置加载 start =================================================
-# [[ -f ~/.config/zsh/init.zsh ]] && source ~/.config/zsh/init.zsh
-# ============================================= 个人配置加载 end   =================================================
-
 # 计算启动时间
 zmodload zsh/datetime
 __BLOCK_START=$EPOCHREALTIME
 
-# 测试代码
+# 测试代码（内部采用了懒加载机制，用来优化庞大的配置加载）
 [[ -f ~/.config/zsh/init.zsh ]] && source ~/.config/zsh/init.zsh
 
 __BLOCK_END=$EPOCHREALTIME
+# 打印启动时间
 printf "Block cost: %.4f seconds\n" "$(( __BLOCK_END - __BLOCK_START ))"
+# ============================================= 个人配置加载 end   =================================================
+
