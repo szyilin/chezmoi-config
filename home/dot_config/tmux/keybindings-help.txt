@@ -25,7 +25,6 @@ M-b N      切换到下一个 session
 M-b P      切换到上一个 session
 M-b R      重命名当前 session
 M-b d      detach 当前 tmux 客户端
-M-b s      查看 session 列表并选择
 
 窗格 Pane
 ---------
