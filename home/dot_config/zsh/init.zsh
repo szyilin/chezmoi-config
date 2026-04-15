@@ -52,6 +52,7 @@ source "$ZSH_CONFIG_DIR/shell/history.zsh"
 source "$ZSH_CONFIG_DIR/shell/keybindings.zsh"
 source "$ZSH_CONFIG_DIR/shell/completions.zsh"
 source "$ZSH_CONFIG_DIR/shell/aliases.zsh"
+source "$ZSH_CONFIG_DIR/shell/proxy.zsh"
 source "$ZSH_CONFIG_DIR/shell/functions.zsh"
 
 # -----------------------------------------------------------------------------
