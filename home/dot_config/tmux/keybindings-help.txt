@@ -1,0 +1,77 @@
+Tmux 快捷键帮助
+================
+
+前缀键
+------
+M-b        主前缀键
+M-b M-b    发送前缀键到 pane 内程序
+M-b ?      打开这份帮助
+
+窗口 Window
+-----------
+M-b c      新建 window
+M-b q      关闭当前 window
+M-b n      切换到下一个 window
+M-b p      切换到上一个 window
+M-b r      重命名当前 window
+M-b 0-9    切换到指定编号的 window
+M-b w      打开 window 列表并选择
+
+会话 Session
+------------
+M-b C      新建 session
+M-b Q      关闭当前 session
+M-b N      切换到下一个 session
+M-b P      切换到上一个 session
+M-b R      重命名当前 session
+M-b d      detach 当前 tmux 客户端
+M-b s      查看 session 列表并选择
+
+窗格 Pane
+---------
+M-b h      切换到左侧 pane
+M-b j      切换到下方 pane
+M-b k      切换到上方 pane
+M-b l      切换到右侧 pane
+M-b v      水平分屏
+M-b s      垂直分屏
+M-b ;      在当前和上一个 pane 之间切换
+M-b z      放大或还原当前 pane
+M-b x      关闭当前 pane（tmux 默认确认）
+M-b !      将当前 pane 弹成独立 window
+M-b {      当前 pane 与前一个 pane 交换位置
+M-b }      当前 pane 与后一个 pane 交换位置
+M-b Space  切换 pane 布局
+M-b q      显示 pane 编号
+M-b Up     调整 pane 边界向上
+M-b Down   调整 pane 边界向下
+M-b Left   调整 pane 边界向左
+M-b Right  调整 pane 边界向右
+
+复制与滚动 Copy / Scroll
+-------------------------
+M-b [      进入 copy mode
+M-b ]      粘贴最近一次复制内容
+鼠标滚轮   在开启 mouse 模式时可直接滚动查看历史
+PgUp       常见终端里可进入滚动回看，是否生效取决于终端映射
+
+复制模式 Copy Mode
+------------------
+同 vim 操作
+
+命令与帮助
+----------
+M-b :      打开 tmux 命令行
+M-b t      显示时钟
+M-b i      显示当前 window 信息
+M-b ~      查看消息日志
+M-b f      在 pane 内容中查找文本
+M-b ?      打开这份自定义帮助
+M-b Ctrl-s 暂停终端输出
+M-b Ctrl-q 恢复终端输出
+
+说明
+----
+1. 这份帮助按个人使用频率组织，不按按键字母排序。
+2. 如需新增常用快捷键，请同时更新 keybindings.conf 和本文件。
+3. 在弹窗中按 q 可以退出 less。
