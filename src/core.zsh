@@ -165,19 +165,19 @@ print_colored() {
 # 日志函数
 ##
 log_info() {
-    print_colored "$COLOR_BLUE" "ℹ️  $*"
+    print_colored "$COLOR_BLUE" "[INFO] $*"
 }
 
 log_success() {
-    print_colored "$COLOR_GREEN" "✅ $*" true
+    print_colored "$COLOR_GREEN" "[ OK ] $*" true
 }
 
 log_warn() {
-    print_colored "$COLOR_YELLOW" "⚠️  $*"
+    print_colored "$COLOR_YELLOW" "[WARN] $*"
 }
 
 log_error() {
-    print_colored "$COLOR_RED" "❌ $*" true
+    print_colored "$COLOR_RED" "[ERR ] $*" true
 }
 
 log_debug() {
@@ -229,7 +229,6 @@ show_summary() {
     local title="$1"
     shift
     
-    echo
     log_header "$title"
     
     for item in "$@"; do
@@ -251,7 +250,7 @@ ask_yes_no() {
     
     # 默认自动确认，除非明确要求手动确认
     if [[ "${MANUAL_CONFIRM:-false}" != "true" ]]; then
-        log_info "$prompt (自动确认: 是)"
+        log_info "$prompt [auto: yes]"
         return 0
     fi
     
@@ -259,12 +258,12 @@ ask_yes_no() {
     while true; do
         if [[ -n "$default" ]]; then
             case "$default" in
-                y|Y) printf "❓ %s [Y/n]: " "$prompt" ;;
-                n|N) printf "❓ %s [y/N]: " "$prompt" ;;
-                *) printf "❓ %s [y/n]: " "$prompt" ;;
+                y|Y) printf "[?] %s [Y/n]: " "$prompt" ;;
+                n|N) printf "[?] %s [y/N]: " "$prompt" ;;
+                *) printf "[?] %s [y/n]: " "$prompt" ;;
             esac
         else
-            printf "❓ %s [y/n]: " "$prompt"
+            printf "[?] %s [y/n]: " "$prompt"
         fi
         
         read -r choice

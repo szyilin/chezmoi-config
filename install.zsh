@@ -112,13 +112,13 @@ main() {
     # 执行安装
     if run_modules "${specified_modules[@]}"; then
         echo
-        log_success "🎉 安装完成!"
-        log_info "建议: 重启终端或运行 'exec zsh' 使配置生效"
+        log_success "安装完成"
+        log_info "如需立即生效，请运行: exec zsh"
         return 0
     else
         echo
-        log_error "❌ 安装失败"
-        log_info "提示: 使用 --debug 查看详细日志"
+        log_error "安装失败"
+        log_info "可使用 --debug 查看详细日志"
         return 1
     fi
 }

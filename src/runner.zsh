@@ -48,16 +48,16 @@ list_modules() {
     
     for module in "${DEFAULT_MODULES[@]}"; do
         local module_file="$CHEZMOI_PROJECT_ROOT/src/modules/${module}.zsh"
-        local status_icon="✅"
+        local status_mark="[OK]"
         local desc="$(get_module_description "$module")"
         
         # 检查模块文件是否存在
         if [[ ! -f "$module_file" ]]; then
-            status_icon="❌"
+            status_mark="[--]"
             desc="$desc (文件不存在)"
         fi
         
-        printf "  %s %-12s - %s\n" "$status_icon" "$module" "$desc"
+        printf "  %s %-14s %s\n" "$status_mark" "$module" "$desc"
     done
 }
 
@@ -144,7 +144,7 @@ run_module() {
     fi
     
     # 2. 执行安装
-    log_info "🚀 执行模块: $module_desc"
+    log_info "执行模块: $module_desc"
     if ! ${module}_install; then
         log_error "模块执行失败: $module_desc"
         return 1
@@ -210,8 +210,8 @@ run_modules() {
     fi
     
     # 显示执行计划
-    log_header "开始安装"
-    echo "计划执行的模块："
+    log_header "安装计划"
+    echo "即将执行的模块："
     local i=1
     for module in "${modules[@]}"; do
         local desc="$(get_module_description "$module")"
@@ -221,8 +221,8 @@ run_modules() {
     echo
     
     # 确认执行
-    if ! ask_yes_no "确认执行以上模块?" "y"; then
-        log_info "用户取消安装"
+    if ! ask_yes_no "确认执行以上模块" "y"; then
+        log_warn "安装已取消"
         return 1
     fi
     
@@ -237,8 +237,8 @@ run_modules() {
         else
             ((failure_count++))
             # 询问是否继续
-            if ! ask_yes_no "模块 $module 失败，是否继续执行其他模块?" "y"; then
-                log_info "用户选择停止安装"
+            if ! ask_yes_no "模块 $module 失败，是否继续执行其他模块" "y"; then
+                log_warn "安装已中止"
                 break
             fi
         fi
@@ -256,10 +256,10 @@ run_modules() {
     echo
     
     if [[ $failure_count -eq 0 ]]; then
-        log_success "🎉 所有模块处理完成!"
+        log_success "所有模块处理完成"
     else
-        log_warn "⚠️  部分模块执行失败"
-        log_info "💡 重新运行此脚本可以继续未完成的配置"
+        log_warn "部分模块执行失败"
+        log_info "重新运行脚本可继续未完成的配置"
     fi
     
     # 返回成功当且仅当没有失败
