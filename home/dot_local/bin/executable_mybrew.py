@@ -32,7 +32,6 @@ import json
 import platform
 import subprocess
 import sys
-import time
 import os
 from pathlib import Path
 from shutil import which
@@ -233,27 +232,55 @@ def get_brew_info() -> Dict:
         return {"version": "未知", "prefix": "未知"}
 
 
-def check_package_status(package_name: str) -> Tuple[bool, str]:
+def get_installed_formulae() -> Tuple[Set[str], bool]:
+    """
+    一次性获取已安装的 Homebrew formula 集合
+
+    Returns:
+        (installed_formulae, success)
+    """
+    try:
+        result = subprocess.run(
+            ["brew", "list", "--formula", "--versions"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+    except Exception as e:
+        log_warn(f"无法获取 Homebrew 已安装包缓存: {e}")
+        return set(), False
+
+    installed = set()
+    for line in result.stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+
+        formula = line.split(maxsplit=1)[0]
+        if formula:
+            installed.add(formula)
+
+    return installed, True
+
+
+def check_package_status(
+    package_name: str,
+    installed_formulae: Set[str],
+    cache_ready: bool
+) -> Tuple[bool, str]:
     """
     检查包的安装状态
     
     Returns:
         (is_installed, status_detail)
     """
-    try:
-        # 检查是否在 PATH 中
-        if which(package_name.split('/')[-1]):
-            return True, "已安装 (PATH 可用)"
-        
-        # 检查 brew list
-        result = subprocess.run(["brew", "list", package_name], 
-                              capture_output=True, text=True)
-        if result.returncode == 0:
-            return True, "已安装 (brew)"
-        else:
-            return False, "未安装"
-    except Exception:
-        return False, "状态未知"
+    if not cache_ready:
+        return False, "状态未知 (brew 缓存不可用)"
+
+    if package_name in installed_formulae:
+        return True, "已安装 (brew)"
+
+    return False, "未安装"
 
 
 def display_package_summary(packages: Dict, os_key: str):
@@ -266,7 +293,11 @@ def display_package_summary(packages: Dict, os_key: str):
     print_info(f"可选安装: {len(packages) - default_count} 个")
 
 
-def interactive_package_selection(packages: Dict) -> Tuple[List[str], List[str]]:
+def interactive_package_selection(
+    packages: Dict,
+    installed_formulae: Set[str],
+    cache_ready: bool
+) -> Tuple[List[str], List[str]]:
     """
     交互式包选择，支持分组显示和智能选择
     
@@ -282,7 +313,7 @@ def interactive_package_selection(packages: Dict) -> Tuple[List[str], List[str]]
     
     print_info("正在检查包状态...")
     for name in packages.keys():
-        is_installed, status = check_package_status(name)
+        is_installed, status = check_package_status(name, installed_formulae, cache_ready)
         if is_installed:
             installed.append((name, status))
         elif "未知" in status:
@@ -335,7 +366,8 @@ def interactive_package_selection(packages: Dict) -> Tuple[List[str], List[str]]
         elif choice == "2":
             # 跳过已安装的默认包
             selected = [name for name, meta in packages.items() 
-                       if meta.get("default", False) and not check_package_status(name)[0]]
+                       if meta.get("default", False)
+                       and not check_package_status(name, installed_formulae, cache_ready)[0]]
             break
         elif choice == "3":
             # 交互式选择
@@ -379,57 +411,96 @@ def interactive_package_selection(packages: Dict) -> Tuple[List[str], List[str]]
     skipped = []
     
     for name in selected:
-        is_installed, status = check_package_status(name)
+        is_installed, status = check_package_status(name, installed_formulae, cache_ready)
         if is_installed:
             skipped.append(name)
         else:
             final_selected.append(name)
-    
+
     return final_selected, skipped
 
 
-def install_packages(packages: List[str]) -> Tuple[List[str], List[str]]:
+def _run_single_package_install(package: str) -> Tuple[bool, str]:
+    """逐个安装单个包，用于批量失败后的诊断和补救"""
+    try:
+        result = subprocess.run(
+            ["brew", "install", package],
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+    except subprocess.TimeoutExpired:
+        return False, "安装超时: 5分钟"
+    except Exception as e:
+        return False, f"安装异常: {e}"
+
+    if result.returncode == 0:
+        return True, ""
+
+    error_msg = result.stderr.strip() or result.stdout.strip() or "未知错误"
+    return False, error_msg
+
+
+def install_packages(packages: List[str]) -> Tuple[List[str], List[str], bool]:
     """
-    安装包列表
+    安装包列表，优先批量安装，失败后逐个诊断和补救
     
     Returns:
-        (successful_packages, failed_packages)
+        (successful_packages, failed_packages, used_batch_install)
     """
     if not packages:
         print_warning("没有需要安装的包")
-        return [], []
+        return [], [], False
     
     print_header(f"开始安装 {len(packages)} 个包")
-    
+
+    print_info("优先使用批量安装模式，减少重复依赖解析和网络请求")
+
+    try:
+        batch_result = subprocess.run(
+            ["brew", "install", *packages],
+            capture_output=True,
+            text=True,
+            timeout=1800
+        )
+    except subprocess.TimeoutExpired:
+        batch_result = None
+        batch_error = "批量安装超时: 30分钟"
+    except Exception as e:
+        batch_result = None
+        batch_error = f"批量安装异常: {e}"
+    else:
+        batch_error = ""
+
+    if batch_result is not None and batch_result.returncode == 0:
+        log_success("批量安装成功")
+        return list(packages), [], True
+
+    log_warn("批量安装失败，开始逐个诊断并补救")
+    if batch_result is None:
+        log_info(batch_error)
+    else:
+        error_msg = batch_result.stderr.strip() or batch_result.stdout.strip() or "未知错误"
+        log_info(f"批量安装错误信息: {error_msg}")
+
     successful = []
     failed = []
-    
+
     for i, package in enumerate(packages, 1):
-        print_step(i, len(packages), f"安装 {package}")
-        
-        try:
-            cmd = ["brew", "install", package]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-            
-            if result.returncode == 0:
-                print_success(f"安装成功: {package}")
-                successful.append(package)
-            else:
-                error_msg = result.stderr.strip() or result.stdout.strip()
-                print_error(f"安装失败: {package}")
-                print_info(f"错误信息: {error_msg}")
-                failed.append(package)
-        
-        except subprocess.TimeoutExpired:
-            print_error(f"安装超时: {package} (5分钟)")
+        print_step(i, len(packages), f"补装 {package}")
+
+        is_success, error_msg = _run_single_package_install(package)
+        if is_success:
+            print_success(f"安装成功: {package}")
+            successful.append(package)
+        else:
+            print_error(f"安装失败: {package}")
+            print_info(f"错误信息: {error_msg}")
             failed.append(package)
-        except Exception as e:
-            print_error(f"安装异常: {package} - {e}")
-            failed.append(package)
-        
+
         print()
-    
-    return successful, failed
+
+    return successful, failed, True
 
 
 def install_cmd() -> bool:
@@ -472,9 +543,20 @@ def install_cmd() -> bool:
     print_info(f"配置文件: {config_path}")
     display_package_summary(packages, os_key)
     print()
-    
+
+    installed_formulae, cache_ready = get_installed_formulae()
+    if cache_ready:
+        log_info(f"已加载 Homebrew 已安装包缓存: {len(installed_formulae)} 个 formula")
+    else:
+        log_warn("Homebrew 已安装包缓存不可用，将把包状态标记为未知")
+    print()
+
     # 包选择
-    selected_packages, skipped_packages = interactive_package_selection(packages)
+    selected_packages, skipped_packages = interactive_package_selection(
+        packages,
+        installed_formulae,
+        cache_ready
+    )
     
     if not selected_packages and not skipped_packages:
         log_info("没有选择任何包，退出安装")
@@ -503,7 +585,7 @@ def install_cmd() -> bool:
             log_info("自动确认模式: 开始安装")
         
         # 执行安装
-        successful, failed = install_packages(selected_packages)
+        successful, failed, used_batch_install = install_packages(selected_packages)
         
         # 安装总结
         print_header("安装完成统计")
@@ -519,7 +601,10 @@ def install_cmd() -> bool:
             log_error(f"安装失败: {len(failed)} 个包")
             for pkg in failed:
                 print(f"  ❌ {pkg}")
-            log_info("建议手动检查失败的包或重新运行安装")
+            if used_batch_install:
+                log_info("已自动执行逐个补救，仍失败的包建议手动检查或重新运行安装")
+            else:
+                log_info("建议手动检查失败的包或重新运行安装")
             success_overall = False
         
         if skipped_packages:
@@ -749,5 +834,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
-
