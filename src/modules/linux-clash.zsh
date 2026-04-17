@@ -52,9 +52,9 @@ linux-clash_check() {
             if [[ -f "/opt/clash/script/common.sh" ]] && [[ -f "/opt/clash/script/clashctl.sh" ]]; then
                 log_info "加载现有的 clash 函数到当前环境..."
                 if source "/opt/clash/script/common.sh" 2>/dev/null && source "/opt/clash/script/clashctl.sh" 2>/dev/null; then
-                    log_success "✅ clash 函数已加载，后续模块可使用代理功能"
+                    log_success "clash 函数已加载，后续模块可使用代理功能"
                 else
-                    log_warn "⚠️  clash 函数加载失败，后续模块无法直接使用代理"
+                    log_warn "clash 函数加载失败，后续模块无法直接使用代理"
                 fi
             fi
         else
@@ -63,11 +63,11 @@ linux-clash_check() {
         
         # 验证关键函数可用性
         if declare -f clashon >/dev/null; then
-            log_info "💡 后续模块可使用: clashon (开启代理), clashoff (关闭代理)"
+            log_info "后续模块可使用: clashon (开启代理), clashoff (关闭代理)"
         fi
         
-        log_info "✅ clash 已完整安装并配置，跳过重复安装"
-        log_info "💡 如需重新配置，请先手动卸载: sudo bash /opt/clash/script/uninstall.sh"
+        log_info "clash 已完整安装并配置，跳过重复安装"
+        log_info "如需重新配置，请先手动卸载: sudo bash /opt/clash/script/uninstall.sh"
         return 1  # 跳过执行
     fi
     
@@ -108,7 +108,7 @@ linux-clash_install() {
     _cleanup_temp_files
     
     log_success "Linux clash 代理环境配置完成"
-    log_info "💡 使用 'clashctl' 或 'clashon' 命令来控制代理"
+    log_info "可使用 'clashctl' 或 'clashon' 命令控制代理"
     return 0
 }
 
@@ -127,10 +127,10 @@ linux-clash_verify() {
     # 验证核心组件 (默认安装 mihomo 内核)
     local kernel_found=false
     if [[ -x "/opt/clash/bin/mihomo" ]]; then
-        log_success "✅ mihomo 内核已安装"
+        log_success "mihomo 内核已安装"
         kernel_found=true
     elif [[ -x "/opt/clash/bin/clash" ]]; then
-        log_success "✅ clash 内核已安装"
+        log_success "clash 内核已安装"
         kernel_found=true
     fi
     
@@ -141,9 +141,9 @@ linux-clash_verify() {
     
     # 验证配置文件
     if [[ -f "/opt/clash/config.yaml" ]]; then
-        log_success "✅ 配置文件存在"
+        log_success "配置文件存在"
     else
-        log_warn "⚠️  配置文件不存在，可能需要手动配置"
+        log_warn "配置文件不存在，可能需要手动配置"
     fi
     
     # 验证命令可用性
@@ -151,18 +151,18 @@ linux-clash_verify() {
     
     # 检查函数是否在当前环境中可用
     if declare -f clashctl >/dev/null && declare -f clashon >/dev/null; then
-        log_success "✅ clash 函数在当前环境中可用"
+        log_success "clash 函数在当前环境中可用"
         functions_available=true
     elif command_exists clashctl; then
-        log_success "✅ clashctl 命令可用 (通过 PATH)"
+        log_success "clashctl 命令可用 (通过 PATH)"
         functions_available=true
     else
-        log_warn "⚠️  clash 函数不可用，可能需要重新加载 shell"
+        log_warn "clash 函数不可用，可能需要重新加载 shell"
     fi
     
     if [[ "$functions_available" == "true" ]]; then
-        log_info "💡 可用命令: clashon, clashoff, clashui, clashctl, clashtun, clashmixin"
-        log_info "💡 Web 控制台: clashui (端口 9090)"
+        log_info "可用命令: clashon, clashoff, clashui, clashctl, clashtun, clashmixin"
+        log_info "Web 控制台: clashui (端口 9090)"
     fi
     
     # 验证系统服务
@@ -170,13 +170,13 @@ linux-clash_verify() {
     [[ -x "/opt/clash/bin/clash" ]] && service_name="clash"
     
     if systemctl is-enabled "$service_name" >/dev/null 2>&1; then
-        log_success "✅ 系统服务已配置: $service_name"
+        log_success "系统服务已配置: $service_name"
     else
-        log_warn "⚠️  系统服务未配置"
+        log_warn "系统服务未配置"
     fi
     
     log_success "Linux clash 配置验证通过"
-    log_info "💡 重新加载 shell 以使用完整功能: source ~/.zshrc"
+    log_info "重新加载 shell 以使用完整功能: source ~/.zshrc"
     return 0
 }
 
@@ -212,7 +212,7 @@ _download_clash_installer() {
         # 使用项目推荐的参数
         if timeout 60 git clone --branch master --depth 1 "$url" "$temp_dir" 2>/dev/null; then
             download_success=true
-            log_success "✅ 下载成功: $url"
+            log_success "下载成功: $url"
             break
         else
             log_warn "下载失败: $url"
@@ -236,7 +236,7 @@ _download_clash_installer() {
     # 设置全局变量供其他函数使用
     CLASH_INSTALLER_DIR="$temp_dir"
     
-    log_success "✅ clash 安装脚本下载完成"
+    log_success "clash 安装脚本下载完成"
     return 0
 }
 
@@ -257,7 +257,7 @@ _check_network_connectivity() {
         log_warn "GitHub API 连接测试失败，但继续尝试"
     fi
     
-    log_info "✅ 网络连接检查完成"
+    log_info "网络连接检查完成"
     return 0
 }
 
@@ -275,12 +275,12 @@ _patch_installer_script() {
     fi
     
     # 修补 _quit 函数，移除 exec 调用
-    sed -i.bak 's/exec sudo -u "$user" -- "$_SHELL" -i/echo "😼 clash 安装完成，请重新加载 shell 环境"/' "$common_script"
+    sed -i.bak 's/exec sudo -u "$user" -- "$_SHELL" -i/echo "[INFO] clash 安装完成，请重新加载 shell 环境"/' "$common_script"
     
     # 修补 _error_quit 函数，移除 exec 调用  
-    sed -i.bak2 's/exec $_SHELL -i/echo "😼 发生错误，请检查日志"/' "$common_script"
+    sed -i.bak2 's/exec $_SHELL -i/echo "[ERR ] 发生错误，请检查日志"/' "$common_script"
     
-    log_success "✅ 脚本修补完成"
+    log_success "脚本修补完成"
     return 0
 }
 
@@ -300,7 +300,7 @@ _run_clash_installer() {
     
     # 执行安装脚本
     if sudo bash install.sh; then
-        log_success "✅ clash 安装脚本执行完成"
+        log_success "clash 安装脚本执行完成"
         return 0
     else
         log_error "clash 安装脚本执行失败"
@@ -338,8 +338,8 @@ _load_clash_functions() {
     
     # 验证关键函数是否可用
     if declare -f clashctl >/dev/null && declare -f clashon >/dev/null; then
-        log_success "✅ clash 函数已加载到当前环境"
-        log_info "💡 现在可以在当前脚本中使用 clashon, clashoff, clashctl 等命令"
+        log_success "clash 函数已加载到当前环境"
+        log_info "现在可以在当前脚本中使用 clashon, clashoff, clashctl 等命令"
         return 0
     else
         log_error "clash 函数加载失败"

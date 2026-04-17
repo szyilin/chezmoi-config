@@ -58,7 +58,7 @@ homebrew-init_install() {
     local proxy_enabled=false
     if try_enable_proxy; then
         proxy_enabled=true
-        log_info "🚀 已开启代理加速下载"
+        log_info "已开启代理加速下载"
     fi
     
     # 4. 执行 mybrew.py 安装命令
@@ -70,11 +70,11 @@ homebrew-init_install() {
     # 5. 关闭代理 (如果之前开启了) - 使用 core.zsh 提供的通用函数
     if [[ "$proxy_enabled" == "true" ]]; then
         try_disable_proxy
-        log_info "📴 已关闭代理"
+        log_info "已关闭代理"
     fi
     
     log_success "Homebrew 软件包安装完成"
-    log_info "💡 使用 'mybrew.py backup' 备份当前安装的包"
+    log_info "如需回写配置，可运行: mybrew.py backup"
     return 0
 }
 
@@ -93,17 +93,17 @@ homebrew-init_verify() {
     # 验证 mybrew.py 脚本可用性
     local mybrew_script=""
     if mybrew_script="$(_find_mybrew_script)" 2>/dev/null; then
-        log_success "✅ mybrew.py 脚本可用: $mybrew_script"
+        log_success "mybrew.py 脚本可用: $mybrew_script"
     else
-        log_warn "⚠️  mybrew.py 脚本不可用，请运行 'chezmoi apply'"
+        log_warn "mybrew.py 脚本不可用，请运行 'chezmoi apply'"
     fi
     
     # 验证配置文件
     local config_file=""
     if config_file="$(_find_mybrew_config)" 2>/dev/null; then
-        log_success "✅ 配置文件可用: $config_file"
+        log_success "配置文件可用: $config_file"
     else
-        log_warn "⚠️  mybrew.json 配置文件不可用"
+        log_warn "mybrew.json 配置文件不可用"
     fi
     
     # 显示已安装包的统计信息
@@ -113,7 +113,7 @@ homebrew-init_verify() {
     fi
     
     log_success "Homebrew 包管理验证通过"
-    log_info "💡 使用 'mybrew.py install' 可管理软件包"
+    log_info "可使用 'mybrew.py install' 管理软件包"
     return 0
 }
 
@@ -191,9 +191,9 @@ _verify_mybrew_script() {
     if [[ ! -x "$script_path" ]]; then
         log_info "脚本不可执行，尝试添加执行权限..."
         if chmod +x "$script_path" 2>/dev/null; then
-            log_success "✅ 已添加执行权限"
+            log_success "已添加执行权限"
         else
-            log_warn "⚠️  无法添加执行权限，将使用 python3 执行"
+            log_warn "无法添加执行权限，将使用 python3 执行"
         fi
     fi
     
@@ -216,7 +216,7 @@ _run_mybrew_install() {
     local script_path="$1"
     
     log_info "执行 mybrew.py 包安装..."
-    log_info "💡 使用自动确认模式安装默认软件包"
+    log_info "将以自动确认模式安装默认软件包"
     
     # 设置环境变量 (与主脚本保持一致)
     export CHEZMOI_PROJECT_ROOT="${CHEZMOI_PROJECT_ROOT}"
@@ -234,11 +234,11 @@ _run_mybrew_install() {
     # 执行安装命令
     log_debug "执行命令: python3 $script_path install"
     if python3 "$script_path" install; then
-        log_success "✅ mybrew.py 包安装完成"
+        log_success "mybrew.py 包安装完成"
         return 0
     else
         log_error "mybrew.py 包安装失败"
-        log_info "💡 可以手动运行查看详细信息: python3 $script_path install"
+        log_info "可手动运行查看详细信息: python3 $script_path install"
         return 1
     fi
 }

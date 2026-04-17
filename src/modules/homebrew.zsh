@@ -33,7 +33,7 @@ homebrew_check() {
                 
                 # 立即加载到当前环境
                 if eval "$($prefix/bin/brew shellenv)" 2>/dev/null; then
-                    log_debug "✅ Homebrew 环境已加载到当前进程"
+                    log_debug "Homebrew 环境已加载到当前进程"
                 fi
                 break
             else
@@ -54,20 +54,18 @@ homebrew_check() {
             log_debug "brew 命令不在当前环境中，尝试加载..."
             if _ensure_brew_in_current_env; then
                 brew_available=true
-                log_debug "✅ brew 环境已加载到当前进程"
+                log_debug "brew 环境已加载到当前进程"
             fi
         fi
         
         if [[ "$brew_available" == "true" ]]; then
             local brew_version="$(brew --version 2>/dev/null | head -n1 || echo 'unknown')"
-            log_info "✅ Homebrew 已安装并配置: $brew_version"
-            log_info "💡 brew 命令在当前环境中可用"
+            log_info "Homebrew 已安装并配置: $brew_version"
         else
-            log_info "✅ Homebrew 已安装，但环境未加载到当前进程"
-            log_info "💡 重新加载 shell 后可使用 brew 命令"
+            log_info "Homebrew 已安装，但当前进程尚未加载环境"
         fi
         
-        log_info "💡 跳过重复安装，保护现有 Homebrew 配置"
+        log_info "跳过重复安装"
         return 1  # 跳过执行
     fi
     
@@ -91,7 +89,7 @@ homebrew_install() {
     local proxy_enabled=false
     if try_enable_proxy; then
         proxy_enabled=true
-        log_info "🚀 已开启代理加速下载"
+        log_info "已开启代理加速下载"
     fi
     
     # 3. 执行官方安装脚本
@@ -115,14 +113,14 @@ homebrew_install() {
     # 6. 关闭代理 (如果之前开启了) - 使用 core.zsh 提供的通用函数
     if [[ "$proxy_enabled" == "true" ]]; then
         try_disable_proxy
-        log_info "📴 已关闭代理"
+        log_info "已关闭代理"
     fi
     
     # 7. 使用环境管理策略 - Homebrew 是轻量级环境变化，使用环境重载
     refresh_environment "homebrew"
     
     log_success "Homebrew 安装配置完成"
-    log_info "💡 brew 命令现在可在当前脚本和后续模块中使用"
+    log_info "brew 命令可在当前脚本和后续模块中使用"
     return 0
 }
 
@@ -141,7 +139,7 @@ homebrew_verify() {
     # 验证 brew 版本
     local brew_version="$(brew --version 2>/dev/null | head -n1)"
     if [[ -n "$brew_version" ]]; then
-        log_success "✅ Homebrew 版本: $brew_version"
+        log_success "Homebrew 版本: $brew_version"
     else
         log_error "验证失败: 无法获取 brew 版本"
         return 1
@@ -150,7 +148,7 @@ homebrew_verify() {
     # 验证 brew 环境
     local brew_prefix="$(brew --prefix 2>/dev/null)"
     if [[ -n "$brew_prefix" ]]; then
-        log_success "✅ Homebrew 安装路径: $brew_prefix"
+        log_success "Homebrew 安装路径: $brew_prefix"
     else
         log_error "验证失败: 无法获取 brew 安装路径"
         return 1
@@ -159,15 +157,15 @@ homebrew_verify() {
     # 验证平台特定配置
     if is_macos; then
         if [[ "$brew_prefix" == "/opt/homebrew" ]] || [[ "$brew_prefix" == "/usr/local" ]]; then
-            log_success "✅ macOS Homebrew 路径正确"
+            log_success "macOS Homebrew 路径正确"
         else
-            log_warn "⚠️  非标准 macOS Homebrew 路径: $brew_prefix"
+            log_warn "非标准 macOS Homebrew 路径: $brew_prefix"
         fi
     elif is_linux; then
         if [[ "$brew_prefix" == "/home/linuxbrew/.linuxbrew" ]]; then
-            log_success "✅ Linux Homebrew 路径正确"
+            log_success "Linux Homebrew 路径正确"
         else
-            log_warn "⚠️  非标准 Linux Homebrew 路径: $brew_prefix"
+            log_warn "非标准 Linux Homebrew 路径: $brew_prefix"
         fi
     fi
     
@@ -186,18 +184,15 @@ _check_system_compatibility() {
     log_info "检查系统兼容性..."
     
     if is_macos; then
-        log_info "✅ macOS 系统，支持 Homebrew"
-        
-        # 简化权限提示 (让 Homebrew 脚本自己处理权限问题)
-        log_info "💡 macOS 上安装 Homebrew 可能需要管理员权限"
-        log_info "💡 如果没有权限，安装脚本会提供详细指导"
+        log_info "当前系统支持 Homebrew: macOS"
+        log_info "安装过程中可能需要管理员权限"
         
         # 检查 macOS 版本 (可选)
         local macos_version="$(sw_vers -productVersion 2>/dev/null || echo 'unknown')"
         log_debug "macOS 版本: $macos_version"
         
     elif is_linux; then
-        log_info "✅ Linux 系统，支持 Homebrew"
+        log_info "当前系统支持 Homebrew: Linux"
         
         # 检查必要工具
         local missing_tools=()
@@ -245,13 +240,13 @@ _run_homebrew_installer() {
         export NONINTERACTIVE=""
         export CI=""
         log_debug "使用交互模式 (需要密码确认)"
-        log_info "💡 安装过程中可能需要输入管理员密码"
+        log_info "安装过程中可能需要输入管理员密码"
     fi
     
     # 执行官方安装脚本
     log_debug "当前工作目录: $(pwd)"
     if (cd "$safe_dir" && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"); then
-        log_success "✅ Homebrew 官方安装脚本执行完成"
+        log_success "Homebrew 官方安装脚本执行完成"
         return 0
     else
         log_error "Homebrew 官方安装脚本执行失败"
@@ -286,7 +281,7 @@ _setup_homebrew_environment() {
         return 1
     fi
     
-    log_info "✅ Homebrew 安装路径: $homebrew_prefix"
+    log_info "Homebrew 安装路径: $homebrew_prefix"
     
     # 配置 shell 环境文件
     local shell_configs=()
@@ -300,7 +295,7 @@ _setup_homebrew_environment() {
             echo "" >> "$config_file"
             echo "# Homebrew environment setup" >> "$config_file"
             echo "$shellenv_command" >> "$config_file"
-            log_info "✅ 已添加到 $config_file"
+            log_info "已写入环境配置: $config_file"
         else
             log_debug "brew shellenv 已存在于 $config_file"
         fi
@@ -351,9 +346,9 @@ _verify_and_load_homebrew() {
         
         # 应用环境变量
         if eval "$shellenv_output"; then
-            log_success "✅ Homebrew 环境已加载到当前进程"
+            log_success "Homebrew 环境已加载到当前进程"
         else
-            log_warn "⚠️  Homebrew 环境变量应用失败"
+            log_warn "Homebrew 环境变量应用失败"
             return 1
         fi
     else
@@ -364,11 +359,11 @@ _verify_and_load_homebrew() {
     # 验证 brew 命令现在可用
     if command_exists brew; then
         local brew_version="$(brew --version 2>/dev/null | head -n1 || echo 'unknown')"
-        log_success "✅ brew 命令现在可用: $brew_version"
+        log_success "brew 命令现在可用: $brew_version"
         return 0
     else
         log_error "brew 命令仍不可用，可能需要重新加载 shell"
-        log_info "💡 尝试手动执行: eval \"\$($homebrew_prefix/bin/brew shellenv)\""
+        log_info "可手动执行: eval \"\$($homebrew_prefix/bin/brew shellenv)\""
         return 1
     fi
 }
@@ -396,7 +391,7 @@ _ensure_brew_in_current_env() {
         if [[ -x "$prefix/bin/brew" ]]; then
             log_debug "找到 Homebrew: $prefix"
             if eval "$($prefix/bin/brew shellenv)" 2>/dev/null; then
-                log_debug "✅ Homebrew 环境已加载"
+                log_debug "Homebrew 环境已加载"
                 return 0
             fi
         fi

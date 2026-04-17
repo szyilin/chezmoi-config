@@ -67,7 +67,7 @@ linux-zsh_check() {
 linux-zsh_install() {
     # 检查是否只需要切换环境
     if [[ "${LINUX_ZSH_ONLY_SWITCH:-false}" == "true" ]]; then
-        log_info "用户默认 shell 已是 zsh，直接切换到 zsh 环境..."
+        log_info "用户默认 shell 已是 zsh，切换到 zsh 环境"
         
         # 确保 .zshrc 存在 (避免 zsh 首次启动向导)
         _ensure_zshrc_exists_quick
@@ -86,7 +86,7 @@ linux-zsh_install() {
             return 1
         fi
     else
-        log_info "✅ zsh 已安装: $(zsh --version | head -n1)"
+        log_info "zsh 已安装: $(zsh --version | head -n1)"
     fi
     
     # 2. 将 zsh 添加到 /etc/shells (如果需要)
@@ -138,10 +138,10 @@ linux-zsh_verify() {
     
     # 验证当前 shell 环境
     if [[ "$SHELL" == *"zsh" ]]; then
-        log_success "✅ zsh 已设置为默认 shell: $SHELL"
+        log_success "zsh 已设置为默认 shell: $SHELL"
     else
-        log_warn "⚠️  zsh 未设置为默认 shell，当前: $SHELL"
-        log_info "💡 重新登录后将使用 zsh 作为默认 shell"
+        log_warn "zsh 未设置为默认 shell，当前: $SHELL"
+        log_info "重新登录后将使用 zsh 作为默认 shell"
     fi
     
     # 验证 .zshrc 文件
@@ -151,7 +151,7 @@ linux-zsh_verify() {
     fi
     
     if [[ -f "$user_home/.zshrc" ]]; then
-        log_success "✅ .zshrc 文件存在: $user_home/.zshrc"
+        log_success ".zshrc 文件存在: $user_home/.zshrc"
     else
         log_error "验证失败: .zshrc 文件不存在"
         return 1
@@ -214,10 +214,10 @@ _install_zsh() {
     
     # 验证安装
     if command_exists zsh; then
-        log_success "✅ zsh 安装成功"
+        log_success "zsh 安装成功"
         return 0
     else
-        log_error "❌ zsh 安装失败"
+        log_error "zsh 安装失败"
         return 1
     fi
 }
@@ -235,7 +235,7 @@ _ensure_zsh_in_shells() {
     
     # 检查是否已在 /etc/shells 中
     if grep -q "^$zsh_path$" /etc/shells 2>/dev/null; then
-        log_info "✅ zsh 已在 /etc/shells 中: $zsh_path"
+        log_info "zsh 已在 /etc/shells 中: $zsh_path"
         return 0
     fi
     
@@ -243,10 +243,10 @@ _ensure_zsh_in_shells() {
     
     # 添加到 /etc/shells
     if echo "$zsh_path" | sudo tee -a /etc/shells >/dev/null; then
-        log_success "✅ 已将 zsh 添加到 /etc/shells"
+        log_success "已将 zsh 添加到 /etc/shells"
         return 0
     else
-        log_error "❌ 无法添加 zsh 到 /etc/shells"
+        log_error "无法添加 zsh 到 /etc/shells"
         return 1
     fi
 }
@@ -259,7 +259,7 @@ _set_zsh_as_default() {
     
     # 检查当前 shell
     if [[ "$SHELL" == *"zsh" ]]; then
-        log_info "✅ zsh 已是默认 shell"
+        log_info "zsh 已是默认 shell"
         return 0
     fi
     
@@ -267,12 +267,12 @@ _set_zsh_as_default() {
     
     # 更改默认 shell
     if chsh -s "$zsh_path"; then
-        log_success "✅ 已设置 zsh 为默认 shell: $zsh_path"
-        log_info "💡 重新登录后生效，或运行 'exec zsh' 立即切换"
+        log_success "已设置 zsh 为默认 shell: $zsh_path"
+        log_info "重新登录后生效，或运行 'exec zsh' 立即切换"
         return 0
     else
-        log_error "❌ 无法设置 zsh 为默认 shell"
-        log_info "💡 您可以手动运行: chsh -s $zsh_path"
+        log_error "无法设置 zsh 为默认 shell"
+        log_info "您可以手动运行: chsh -s $zsh_path"
         return 1
     fi
 }
@@ -299,7 +299,7 @@ _ensure_zshrc_exists() {
     
     # 检查 .zshrc 是否存在
     if [[ -f "$zshrc_path" ]]; then
-        log_info "✅ .zshrc 文件已存在: $zshrc_path"
+        log_info ".zshrc 文件已存在: $zshrc_path"
         return 0
     fi
     
@@ -317,8 +317,8 @@ _ensure_zshrc_exists() {
         chmod 644 "$zshrc_path" || return 1
     fi
     
-    log_success "✅ 已创建空的 .zshrc 文件"
-    log_info "💡 避免 zsh 首次启动配置向导"
+    log_success "已创建空的 .zshrc 文件"
+    log_info "避免 zsh 首次启动配置向导"
     
     return 0
 }
@@ -349,7 +349,7 @@ _ensure_zshrc_exists_quick() {
         touch "$zshrc_path"
     fi
     
-    log_debug "✅ 已创建 .zshrc 文件"
+    log_debug "已创建 .zshrc 文件"
     return 0
 }
 

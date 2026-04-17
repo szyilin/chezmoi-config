@@ -371,7 +371,7 @@ try_enable_proxy() {
     # 验证代理是否真的工作 (保底措施：测试实际连接)
     log_debug "验证代理连接..."
     if ! test_proxy_connection; then
-        log_warn "⚠️  代理连接测试失败，恢复原始网络环境"
+        log_warn "代理连接测试失败，恢复原始网络环境"
         
         # 恢复原始环境变量
         export http_proxy="$original_http_proxy"
@@ -383,7 +383,7 @@ try_enable_proxy() {
         [[ -z "$original_https_proxy" ]] && unset https_proxy
         [[ -z "$original_all_proxy" ]] && unset all_proxy
         
-        log_info "💡 已恢复原始网络环境，将使用直连方式下载"
+        log_info "已恢复原始网络环境，将使用直连方式下载"
         return 1
     fi
     
@@ -411,7 +411,7 @@ restart_in_new_environment() {
     local trigger_module="$1"
     local target_shell="${2:-zsh}"
     
-    log_info "🔄 $trigger_module 完成，切换到 $target_shell 环境继续执行后续模块..."
+    log_info "$trigger_module 完成，切换到 $target_shell 环境继续执行后续模块"
     
     # 构建重启命令参数
     local restart_args=("--continue-after=$trigger_module")
@@ -435,7 +435,7 @@ restart_in_new_environment() {
 refresh_environment() {
     local trigger_module="$1"
     
-    log_info "🔄 重载环境配置 (触发模块: $trigger_module)"
+    log_info "重载环境配置 (触发模块: $trigger_module)"
     
     case "$trigger_module" in
         "homebrew")
@@ -464,7 +464,7 @@ refresh_environment() {
             ;;
     esac
     
-    log_success "✅ 环境重载完成"
+    log_success "环境重载完成"
     return 0
 }
 

@@ -43,9 +43,8 @@ oh-my-zsh_check() {
             ohmyzsh_version="(已安装)"
         fi
         
-        log_info "✅ Oh My Zsh 已安装并配置 $ohmyzsh_version"
-        log_info "💡 配置文件由 chezmoi 管理，无需重复安装"
-        log_info "💡 跳过重复安装，保护现有 Oh My Zsh 配置"
+        log_info "Oh My Zsh 已安装并配置 $ohmyzsh_version"
+        log_info "跳过重复安装"
         return 1  # 跳过执行
     fi
     
@@ -56,7 +55,7 @@ oh-my-zsh_check() {
         if ask_yes_no "是否自动清理并重新安装?" "y"; then
             log_info "清理不完整的 Oh My Zsh 安装..."
             if rm -rf "$HOME/.oh-my-zsh" 2>/dev/null; then
-                log_success "✅ 清理完成，将重新安装"
+                log_success "清理完成，将重新安装"
                 return 0  # 需要执行
             else
                 log_error "清理失败，请手动执行: rm -rf ~/.oh-my-zsh"
@@ -82,7 +81,7 @@ oh-my-zsh_install() {
     local proxy_enabled=false
     if try_enable_proxy; then
         proxy_enabled=true
-        log_info "🚀 已开启代理加速下载"
+        log_info "已开启代理加速下载"
     fi
     
     # 2. 执行官方安装脚本 (保持现有配置)
@@ -99,11 +98,11 @@ oh-my-zsh_install() {
     # 4. 关闭代理 (如果之前开启了) - 使用 core.zsh 提供的通用函数
     if [[ "$proxy_enabled" == "true" ]]; then
         try_disable_proxy
-        log_info "📴 已关闭代理"
+        log_info "已关闭代理"
     fi
     
     log_success "Oh My Zsh 框架安装完成"
-    log_info "💡 配置文件 (.zshrc, .p10k.zsh) 请通过 chezmoi apply 管理"
+    log_info "配置文件 (.zshrc, .p10k.zsh) 请通过 chezmoi apply 管理"
     return 0
 }
 
@@ -127,9 +126,9 @@ oh-my-zsh_verify() {
     
     # 验证 git 仓库
     if [[ -d "$HOME/.oh-my-zsh/.git" ]]; then
-        log_success "✅ Oh My Zsh git 仓库正常"
+        log_success "Oh My Zsh git 仓库正常"
     else
-        log_warn "⚠️  Oh My Zsh git 仓库不存在"
+        log_warn "Oh My Zsh git 仓库不存在"
     fi
     
     # 检查重要插件是否存在
@@ -143,22 +142,22 @@ oh-my-zsh_verify() {
     done
     
     if [[ ${#missing_plugins[@]} -gt 0 ]]; then
-        log_warn "⚠️  缺少插件: ${missing_plugins[*]}"
-        log_info "💡 这些插件会在应用 .zshrc 配置时自动安装"
+        log_warn "缺少插件: ${missing_plugins[*]}"
+        log_info "这些插件会在应用 .zshrc 配置时自动安装"
     else
-        log_success "✅ 必需插件已安装"
+        log_success "必需插件已安装"
     fi
     
     # 检查 Powerlevel10k 主题
     if [[ -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]]; then
-        log_success "✅ Powerlevel10k 主题已安装"
+        log_success "Powerlevel10k 主题已安装"
     else
-        log_warn "⚠️  Powerlevel10k 主题未安装"
-        log_info "💡 需要手动安装或通过 chezmoi 配置"
+        log_warn "Powerlevel10k 主题未安装"
+        log_info "需要手动安装或通过 chezmoi 配置"
     fi
     
     log_success "Oh My Zsh 框架验证通过"
-    log_info "💡 现在可以通过 'chezmoi apply' 应用你的个性化配置"
+    log_info "现在可以通过 'chezmoi apply' 应用个性化配置"
     return 0
 }
 
@@ -187,7 +186,7 @@ _run_oh_my_zsh_installer() {
         
         local backup_dir="$HOME/.oh-my-zsh.backup.$(date +%s)"
         if mv "$HOME/.oh-my-zsh" "$backup_dir" 2>/dev/null; then
-            log_success "✅ 已备份到: $backup_dir"
+            log_success "已备份到: $backup_dir"
         else
             log_error "备份失败，请手动处理: mv ~/.oh-my-zsh ~/.oh-my-zsh.backup"
             return 1
@@ -202,7 +201,7 @@ _run_oh_my_zsh_installer() {
     
     # 在安全目录中执行官方安装脚本
     if (cd "$safe_dir" && sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended); then
-        log_success "✅ Oh My Zsh 基础框架安装完成"
+        log_success "Oh My Zsh 基础框架安装完成"
         return 0
     else
         log_error "Oh My Zsh 安装脚本执行失败"
@@ -240,9 +239,9 @@ _install_required_plugins() {
     if [[ ! -d "$plugins_dir/zsh-autosuggestions" ]]; then
         log_info "安装 zsh-autosuggestions 插件..."
         if (cd "$safe_dir" && git clone https://github.com/zsh-users/zsh-autosuggestions "$plugins_dir/zsh-autosuggestions" 2>/dev/null); then
-            log_success "✅ zsh-autosuggestions 安装完成"
+            log_success "zsh-autosuggestions 安装完成"
         else
-            log_warn "⚠️  zsh-autosuggestions 安装失败"
+            log_warn "zsh-autosuggestions 安装失败"
         fi
     else
         log_debug "zsh-autosuggestions 插件已存在"
@@ -252,9 +251,9 @@ _install_required_plugins() {
     if [[ ! -d "$plugins_dir/zsh-syntax-highlighting" ]]; then
         log_info "安装 zsh-syntax-highlighting 插件..."
         if (cd "$safe_dir" && git clone https://github.com/zsh-users/zsh-syntax-highlighting "$plugins_dir/zsh-syntax-highlighting" 2>/dev/null); then
-            log_success "✅ zsh-syntax-highlighting 安装完成"
+            log_success "zsh-syntax-highlighting 安装完成"
         else
-            log_warn "⚠️  zsh-syntax-highlighting 安装失败"
+            log_warn "zsh-syntax-highlighting 安装失败"
         fi
     else
         log_debug "zsh-syntax-highlighting 插件已存在"
@@ -264,9 +263,9 @@ _install_required_plugins() {
     if [[ ! -d "$themes_dir/powerlevel10k" ]]; then
         log_info "安装 Powerlevel10k 主题..."
         if (cd "$safe_dir" && git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$themes_dir/powerlevel10k" 2>/dev/null); then
-            log_success "✅ Powerlevel10k 主题安装完成"
+            log_success "Powerlevel10k 主题安装完成"
         else
-            log_warn "⚠️  Powerlevel10k 主题安装失败"
+            log_warn "Powerlevel10k 主题安装失败"
         fi
     else
         log_debug "Powerlevel10k 主题已存在"
