@@ -279,6 +279,49 @@ ask_yes_no() {
 }
 
 ##
+# 显式确认（忽略自动确认模式）
+##
+ask_yes_no_explicit() {
+    local prompt="$1"
+    local default="${2:-}"
+
+    if [[ ! -t 0 ]]; then
+        case "$default" in
+            y|Y)
+                log_warn "当前会话无法交互确认，按默认值继续: yes"
+                return 0
+                ;;
+            *)
+                log_warn "当前会话无法交互确认，按默认值继续: no"
+                return 1
+                ;;
+        esac
+    fi
+
+    local choice
+    while true; do
+        if [[ -n "$default" ]]; then
+            case "$default" in
+                y|Y) printf "[?] %s [Y/n]: " "$prompt" ;;
+                n|N) printf "[?] %s [y/N]: " "$prompt" ;;
+                *) printf "[?] %s [y/n]: " "$prompt" ;;
+            esac
+        else
+            printf "[?] %s [y/n]: " "$prompt"
+        fi
+
+        read -r choice
+        [[ -z "$choice" && -n "$default" ]] && choice="$default"
+
+        case "$choice" in
+            [Yy]|[Yy][Ee][Ss]) return 0 ;;
+            [Nn]|[Nn][Oo]) return 1 ;;
+            *) echo "请输入 y 或 n" ;;
+        esac
+    done
+}
+
+##
 # 显示/隐藏光标
 ##
 show_cursor() { 
@@ -398,6 +441,62 @@ try_disable_proxy() {
     if declare -f clashoff >/dev/null; then
         clashoff 2>/dev/null || true
     fi
+}
+
+##
+# 安装入口网络检查
+##
+ensure_install_network_ready() {
+    if [[ "${INSTALLER_NETWORK_CHECK_DONE:-false}" == "true" ]]; then
+        return 0
+    fi
+
+    local has_proxy_env=false
+    if declare -f _proxy_has_env >/dev/null && _proxy_has_env; then
+        has_proxy_env=true
+    fi
+
+    if [[ "$has_proxy_env" == "true" ]]; then
+        log_info "检测到终端代理环境，验证连接..."
+        if test_proxy_connection; then
+            export INSTALLER_NETWORK_CHECK_DONE=true
+            log_info "代理环境可用"
+            return 0
+        fi
+
+        log_warn "检测到终端代理环境，但连接测试失败"
+        if declare -f proxy_refresh >/dev/null; then
+            log_info "尝试刷新终端代理环境..."
+            proxy_refresh >/dev/null 2>&1 || true
+
+            if declare -f _proxy_has_env >/dev/null && _proxy_has_env && test_proxy_connection; then
+                export INSTALLER_NETWORK_CHECK_DONE=true
+                log_info "代理环境刷新成功"
+                return 0
+            fi
+        fi
+    elif declare -f proxy_on >/dev/null; then
+        log_info "未检测到终端代理环境，尝试自动启用代理..."
+        proxy_on >/dev/null 2>&1 || true
+
+        if declare -f _proxy_has_env >/dev/null && _proxy_has_env && test_proxy_connection; then
+            export INSTALLER_NETWORK_CHECK_DONE=true
+            log_info "代理环境已启用"
+            return 0
+        fi
+    else
+        log_debug "未加载 proxy.zsh，跳过自动代理启用"
+    fi
+
+    log_warn "当前终端未检测到可用代理，将使用直连方式执行安装"
+    if ! ask_yes_no_explicit "未启用代理，是否继续执行安装" "n"; then
+        log_warn "已取消安装"
+        return 1
+    fi
+
+    export INSTALLER_NETWORK_CHECK_DONE=true
+    log_info "继续以直连方式执行安装"
+    return 0
 }
 
 # =============================================================================

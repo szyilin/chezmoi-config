@@ -21,6 +21,11 @@ if ! source "$SCRIPT_DIR/src/core.zsh"; then
     exit 1
 fi
 
+# 加载代理支持（如果存在）
+if [[ -f "$SCRIPT_DIR/home/dot_config/zsh/shell/proxy.zsh" ]]; then
+    source "$SCRIPT_DIR/home/dot_config/zsh/shell/proxy.zsh" || true
+fi
+
 # 加载模块执行器
 if ! source "$SCRIPT_DIR/src/runner.zsh"; then
     echo "致命错误: 无法加载模块执行器" >&2
@@ -101,6 +106,11 @@ main() {
     
     # 保存用户指定的模块列表
     INSTALLER_ORIGINAL_MODULES="${specified_modules[*]}"
+
+    # 优先确认网络环境，避免后续下载阶段才发现未启用代理
+    if ! ensure_install_network_ready; then
+        return 1
+    fi
     
     # 显示启动信息
     show_banner "$INSTALLER_NAME" "$INSTALLER_VERSION"
