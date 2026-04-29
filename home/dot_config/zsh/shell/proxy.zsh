@@ -199,10 +199,58 @@ _proxy_export_uppercase() {
     [[ -n "${all_proxy:-}" ]] && export ALL_PROXY="$all_proxy"
 }
 
+_proxy_build_git_ssh_command() {
+    local protocol="$1"
+    local host="$2"
+    local port="$3"
+
+    command -v nc >/dev/null 2>&1 || return 1
+
+    case "$protocol" in
+        socks5)
+            print -r -- "ssh -o ProxyCommand='nc -x ${host}:${port} -X 5 %h %p'"
+            ;;
+        http|https)
+            print -r -- "ssh -o ProxyCommand='nc -x ${host}:${port} -X connect %h %p'"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+_proxy_sync_git_ssh_command() {
+    local protocol="$1"
+    local host="$2"
+    local port="$3"
+    local git_ssh_command=""
+
+    if [[ -n "${GIT_SSH_COMMAND:-}" && "${PROXY_MANAGED_GIT_SSH_COMMAND:-0}" != "1" ]]; then
+        return 0
+    fi
+
+    git_ssh_command="$(_proxy_build_git_ssh_command "$protocol" "$host" "$port")" || return 1
+    export GIT_SSH_COMMAND="$git_ssh_command"
+    export PROXY_MANAGED_GIT_SSH_COMMAND=1
+}
+
+_proxy_clear_git_ssh_command() {
+    if [[ "${PROXY_MANAGED_GIT_SSH_COMMAND:-0}" == "1" ]]; then
+        unset GIT_SSH_COMMAND
+        unset PROXY_MANAGED_GIT_SSH_COMMAND
+    fi
+}
+
 proxy_on() {
     local detected protocol host port source
 
     if _proxy_has_env; then
+        detected="$(_proxy_detect_from_env)" || {
+            echo "✗ 当前代理环境变量无法解析"
+            return 1
+        }
+        IFS='|' read -r protocol host port source <<<"$detected"
+        _proxy_sync_git_ssh_command "$protocol" "$host" "$port" || true
         echo "✓ 代理环境变量已存在，保持当前配置"
         return 0
     fi
@@ -231,12 +279,14 @@ proxy_on() {
     esac
 
     _proxy_export_uppercase
+    _proxy_sync_git_ssh_command "$protocol" "$host" "$port" || true
     echo "✓ 代理已开启 ($protocol://$host:$port, source=$source)"
 }
 
 proxy_off() {
     unset http_proxy https_proxy all_proxy
     unset HTTP_PROXY HTTPS_PROXY ALL_PROXY
+    _proxy_clear_git_ssh_command
     echo "✓ 代理已关闭"
 }
 
@@ -252,6 +302,7 @@ proxy_status() {
     echo "  http_proxy=${http_proxy:-<empty>}"
     echo "  https_proxy=${https_proxy:-<empty>}"
     echo "  all_proxy=${all_proxy:-<empty>}"
+    echo "  GIT_SSH_COMMAND=${GIT_SSH_COMMAND:-<empty>}"
 
     if detected="$(proxy_detect 2>/dev/null)"; then
         local protocol host port source
