@@ -6,3 +6,11 @@ dot_DS_Store
 
 # nvim 配置文件夹
 .config/nvim/lazy-lock.json
+
+# ssh-agent runtime sockets
+.ssh/agent
+.ssh/agent/**
+
+# ssh host trust cache
+.ssh/known_hosts
+.ssh/known_hosts.old
