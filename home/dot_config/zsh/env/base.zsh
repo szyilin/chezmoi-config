@@ -3,6 +3,9 @@
 # 基础环境变量配置
 # =============================================================================
 
+[[ -n ${__XKD_ZSH_ENV_BASE_LOADED:-} ]] && return
+typeset -g __XKD_ZSH_ENV_BASE_LOADED=1
+
 # 基础路径
 export LOCAL_HOME="$HOME/.local"
 add_to_path "$LOCAL_HOME/bin"

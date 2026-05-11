@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+
+if [[ -n "$TMUX" ]]; then
+    zmodload zsh/datetime
+    __XKD_ZSH_BOOT_START=$EPOCHREALTIME
+fi
+
+[[ -f ~/.config/zsh/init-bootstrap.zsh ]] && source ~/.config/zsh/init-bootstrap.zsh

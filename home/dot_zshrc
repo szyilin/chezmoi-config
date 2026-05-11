@@ -1,13 +1,10 @@
 # ============================================= 个人配置加载 start =================================================
-# 计算启动时间
-zmodload zsh/datetime
-__BLOCK_START=$EPOCHREALTIME
+# 交互式增量配置（共享基础层由 .zshenv 负责）
+[[ -f ~/.config/zsh/init-interactive.zsh ]] && source ~/.config/zsh/init-interactive.zsh
 
-# 测试代码（内部采用了懒加载机制，用来优化庞大的配置加载）
-[[ -f ~/.config/zsh/init.zsh ]] && source ~/.config/zsh/init.zsh
-
-__BLOCK_END=$EPOCHREALTIME
-# 打印启动时间
-printf "Block cost: %.4f seconds\n" "$(( __BLOCK_END - __BLOCK_START ))"
+if [[ -n "$TMUX" ]] && [[ -n "${__XKD_ZSH_BOOT_START:-}" ]]; then
+    zmodload zsh/datetime
+    __XKD_ZSH_BOOT_END=$EPOCHREALTIME
+    printf "Block cost: %.4f seconds\n" "$(( __XKD_ZSH_BOOT_END - __XKD_ZSH_BOOT_START ))"
+fi
 # ============================================= 个人配置加载 end   =================================================
-

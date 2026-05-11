@@ -3,6 +3,9 @@
 # 加载机制工具
 # =============================================================================
 
+[[ -n ${__XKD_ZSH_CORE_LOADER_LOADED:-} ]] && return
+typeset -g __XKD_ZSH_CORE_LOADER_LOADED=1
+
 # 文件存在时加载
 load_if_exists() {
     local file="$1"

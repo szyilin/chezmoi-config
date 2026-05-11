@@ -3,6 +3,9 @@
 # PATH 管理工具
 # =============================================================================
 
+[[ -n ${__XKD_ZSH_CORE_PATH_LOADED:-} ]] && return
+typeset -g __XKD_ZSH_CORE_PATH_LOADED=1
+
 # 自动去重 PATH
 typeset -U path
 

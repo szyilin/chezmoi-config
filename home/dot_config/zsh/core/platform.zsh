@@ -3,6 +3,9 @@
 # 平台检测工具
 # =============================================================================
 
+[[ -n ${__XKD_ZSH_CORE_PLATFORM_LOADED:-} ]] && return
+typeset -g __XKD_ZSH_CORE_PLATFORM_LOADED=1
+
 # 平台检测缓存（避免重复判断）
 _platform_cache=""
 

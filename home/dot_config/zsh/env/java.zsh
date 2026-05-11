@@ -3,6 +3,9 @@
 # Java 开发环境配置（仅 macOS）
 # =============================================================================
 
+[[ -n ${__XKD_ZSH_ENV_JAVA_LOADED:-} ]] && return
+typeset -g __XKD_ZSH_ENV_JAVA_LOADED=1
+
 if is_macos; then
     # JDK
     if [[ -d "$HOME/.local/share/java/jdk21/Contents/Home" ]]; then
