@@ -6,11 +6,8 @@
 
 ```txt
 ~/.config/zsh/
-├── init-bootstrap.zsh    # 所有 zsh 场景共享的基础入口（主入口）
-├── init-interactive.zsh  # 仅交互式 shell 的增量入口（主入口）
-├── init.zsh              # 兼容旧入口（转发到 bootstrap + interactive）
-├── bootstrap.zsh         # 兼容别名，转发到 init-bootstrap.zsh
-├── interactive.zsh       # 兼容别名，转发到 init-interactive.zsh
+├── init-bootstrap.zsh    # 所有 zsh 场景共享的基础入口
+├── init-interactive.zsh  # 仅交互式 shell 的增量入口
 ├── core/                 # 核心层（无依赖）
 │   ├── platform.zsh     # 平台检测
 │   ├── path.zsh         # PATH 管理
@@ -42,8 +39,6 @@
 
 - `~/.zshenv` -> `init-bootstrap.zsh`
 - `~/.zshrc` -> `init-interactive.zsh`
-- `init.zsh` 仅保留兼容旧入口
-- `bootstrap.zsh` / `interactive.zsh` 仅作为过渡别名，后续维护以 `init-*` 为准
 
 ## 加载顺序
 
@@ -107,7 +102,7 @@ local (可选)
 - 交互式 zsh 的真实顺序是：先 `.zshenv`，后 `.zshrc`。
 - 因此共享基础层默认会先执行一次，交互层只允许做增量，不做共享初始化重放。
 - `init-interactive.zsh` 开头会先检查当前 shell 是否交互；如果不是，会直接 `return`，防止误把 OMZ、compinit、tmux 等逻辑带进脚本环境。
-- `init-bootstrap.zsh`、`init-interactive.zsh` 以及核心共享模块都带 guard，因此即便旧入口或兼容别名被再次 source，也只会短路返回。
+- `init-bootstrap.zsh`、`init-interactive.zsh` 以及核心共享模块都带 guard，因此重复 source 也只会短路返回。
 - `node/npm/python` 的命令可用性来自 `node-path.zsh` / `python-path.zsh`，不依赖交互懒加载，所以 bootstrap 先执行不会妨碍后续交互层继续挂载 `nvm` / `pyenv` 的 shell 集成。
 
 ## 本地配置

@@ -14,7 +14,7 @@ typeset -g __XKD_ZSH_INIT_INTERACTIVE_LOADED=1
 
 ZSH_CONFIG_DIR="${${(%):-%x}:A:h}"
 
-# .zshenv 理论上会先加载 init-bootstrap。这里只在兼容旧入口时兜底。
+# 正常启动链会先经过 .zshenv；这里保留依赖兜底，确保单独 source 本文件时也能工作。
 if [[ -z ${__XKD_ZSH_INIT_BOOTSTRAP_LOADED:-} ]]; then
     source "$ZSH_CONFIG_DIR/init-bootstrap.zsh"
 fi
