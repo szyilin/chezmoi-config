@@ -1,10 +1,1 @@
-# ============================================= 个人配置加载 start =================================================
-# 交互式增量配置（共享基础层由 .zshenv 负责）
-[[ -f ~/.config/zsh/init-interactive.zsh ]] && source ~/.config/zsh/init-interactive.zsh
-
-if [[ -n "$TMUX" ]] && [[ -n "${__XKD_ZSH_BOOT_START:-}" ]]; then
-    zmodload zsh/datetime
-    __XKD_ZSH_BOOT_END=$EPOCHREALTIME
-    printf "Block cost: %.4f seconds\n" "$(( __XKD_ZSH_BOOT_END - __XKD_ZSH_BOOT_START ))"
-fi
-# ============================================= 个人配置加载 end   =================================================
+[[ -f ~/.config/zsh/entry.zsh ]] && source ~/.config/zsh/entry.zsh zshrc

@@ -6,8 +6,6 @@
 [[ -n ${__XKD_ZSH_ENV_NODE_LOADED:-} ]] && return
 typeset -g __XKD_ZSH_ENV_NODE_LOADED=1
 
-source "${${(%):-%x}:A:h}/node-path.zsh"
-
 # 定义 nvm 加载函数
 _load_nvm() {
     load_if_exists "$BREW_HOME/opt/nvm/nvm.sh"

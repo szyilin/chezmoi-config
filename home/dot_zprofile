@@ -1,8 +1,3 @@
 #!/usr/bin/env zsh
 
-# macOS 的 /etc/zprofile 可能在 .zshenv 之后重新整理 PATH。
-# 这里仅重新应用 pyenv 的 PATH 顺序，确保 login shell 也优先命中 shims。
-if [[ -f ~/.config/zsh/env/python-path.zsh ]]; then
-    unset __XKD_ZSH_ENV_PYTHON_PATH_LOADED
-    source ~/.config/zsh/env/python-path.zsh
-fi
+[[ -f ~/.config/zsh/entry.zsh ]] && source ~/.config/zsh/entry.zsh zprofile
