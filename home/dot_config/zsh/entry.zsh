@@ -30,6 +30,7 @@ _xkd_zsh_bootstrap_shared() {
 
     _xkd_zsh_source "$__XKD_ZSH_ENTRY_DIR/env/base.zsh"
     _xkd_zsh_source "$__XKD_ZSH_ENTRY_DIR/env/homebrew.zsh"
+    _xkd_zsh_source "$__XKD_ZSH_ENTRY_DIR/env/wireshark.zsh"
     _xkd_zsh_source "$__XKD_ZSH_ENTRY_DIR/env/node-path.zsh"
     _xkd_zsh_source "$__XKD_ZSH_ENTRY_DIR/env/python-path.zsh"
     _xkd_zsh_source "$__XKD_ZSH_ENTRY_DIR/env/rust.zsh"
