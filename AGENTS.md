@@ -1,41 +1,32 @@
 # AGENTS
 
-## Chezmoi 工作约定
+## 强制规则（chezmoi）
 
-- 当前仓库就是 `chezmoi` 的源目录。
-- 优先在这个仓库内修改配置，不要直接修改 `$HOME` 下的目标文件。
-- 修改受管文件后，使用下面的命令同步到目标目录：
+1. **只改源目录**：`~/.local/share/chezmoi/`（本仓库）。禁止直接改 `$HOME` 下的目标文件。
+2. **改完必须同步**：任何增删改受管文件后，AI **必须执行** `chezmoi apply`，不要只改源目录就结束。
+3. **删除用 destroy**：删除受管文件时，AI **必须**用目标路径执行 `chezmoi destroy`，禁止只在源目录 `rm` 就完事。
 
 ```bash
+chezmoi destroy ~/.config/nvim/init.lua   # 示例：目标路径
 chezmoi apply
 ```
 
-## 删除受管文件
+4. **删源后查残留**：从源目录删除文件并 `apply` 后，AI **必须**对对应目录执行 `chezmoi unmanaged`，确认目标目录无残留；有残留则删除目标文件，**禁止**对残留文件执行 `chezmoi add`。
+5. **同步前可预览**：不确定时先 `chezmoi diff`，再 `chezmoi apply`。
+6. **不怕出错**：源目录有 git，可 `git checkout` / `git revert` 恢复后，再 `chezmoi apply` 把 `$HOME` 同步回来。
 
-- 如果某个受 `chezmoi` 管理的文件需要同时从源目录和目标目录删除，优先使用：
+## 标准流程
 
-```bash
-chezmoi destroy <目标路径>
-```
+| 操作 | 命令 |
+|------|------|
+| 修改配置 | 改源 → `chezmoi apply` |
+| 删除受管文件 | `chezmoi destroy <目标路径>` → `chezmoi apply` |
+| 检查目标残留 | `chezmoi unmanaged ~/.config/<模块>` |
+| 预览变更 | `chezmoi diff` |
+| 出错回滚 | git 恢复源 → `chezmoi apply` |
 
-- 示例：
+## 禁止
 
-```bash
-chezmoi destroy ~/.config/zsh/init.zsh
-```
-
-- `chezmoi destroy` 比单纯删除源目录文件更合适，因为它会同时删除：
-  - 源目录中的条目
-  - 目标目录中的真实文件
-  - `chezmoi` 的相关状态记录
-
-## 重要说明
-
-- `chezmoi apply` 负责同步现有受管文件的内容变化，但不会自动删除目标目录中已经残留的旧文件。
-- 如果某个源文件已经被手动删除，可以使用下面的命令检查目标目录中的残留文件：
-
-```bash
-chezmoi unmanaged <路径>
-```
-
-- 确认是残留文件后，再手动删除。
+- 直接编辑 `~/.config/...` 再 `chezmoi add` 把残留捞回源目录
+- 删除源文件却不 `destroy` / 不查 `unmanaged`
+- 改完源目录不同步到目标（不跑 `chezmoi apply`）
