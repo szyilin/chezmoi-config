@@ -42,6 +42,8 @@ function M.lsp_settings()
     import = {
       maven = { enabled = true },
       gradle = { enabled = false },
+      -- LSP 侧声明（真正生效须配合 patch_cmd 的 JVM 参数）
+      generatesMetadataFilesAtProjectRoot = false,
     },
   }
 
@@ -70,18 +72,56 @@ function M.plugin_opts()
 end
 
 --- 禁止在项目根生成 .project / .classpath / .settings（须通过 --jvm-arg 传递）
----@param opts table jdtls attach config（含 cmd）
-function M.patch_cmd(opts)
-  opts.cmd = opts.cmd or {}
-  for _, arg in ipairs(opts.cmd) do
+---@param target table 含 cmd: string[] 的对象
+function M.patch_cmd(target)
+  target.cmd = target.cmd or {}
+  for _, arg in ipairs(target.cmd) do
     if arg:find(METADATA_AT_ROOT_FLAG, 1, true) then
       return
     end
   end
-  table.insert(opts.cmd, "--jvm-arg=" .. METADATA_AT_ROOT_FLAG)
+  table.insert(target.cmd, "--jvm-arg=" .. METADATA_AT_ROOT_FLAG)
 end
 
----@param opts table
+--- 包装 LazyVim 的 full_cmd，确保 JVM 参数进入最终 jdtls 启动命令
+---@param orig_full_cmd function
+---@return function
+function M.wrap_full_cmd(orig_full_cmd)
+  return function(opts)
+    M.patch_cmd(opts)
+    local cmd = orig_full_cmd(opts)
+    M.patch_cmd({ cmd = cmd })
+    return cmd
+  end
+end
+
+---@param opts table nvim-jdtls plugin opts（LazyVim lang.java 合并后）
+---@return table
+function M.apply_plugin_opts(opts)
+  opts = vim.tbl_deep_extend("force", opts or {}, M.plugin_opts())
+
+  if opts.cmd then
+    M.patch_cmd(opts)
+  end
+
+  if type(opts.full_cmd) == "function" then
+    opts.full_cmd = M.wrap_full_cmd(opts.full_cmd)
+  end
+
+  local previous_jdtls = opts.jdtls
+  opts.jdtls = function(jdtls_opts)
+    if type(previous_jdtls) == "function" then
+      jdtls_opts = previous_jdtls(jdtls_opts) or jdtls_opts
+    elseif type(previous_jdtls) == "table" then
+      jdtls_opts = vim.tbl_deep_extend("force", jdtls_opts, previous_jdtls)
+    end
+    return M.merge_jdtls(jdtls_opts)
+  end
+
+  return opts
+end
+
+---@param opts table jdtls attach config
 ---@return table
 function M.merge_jdtls(opts)
   M.patch_cmd(opts)

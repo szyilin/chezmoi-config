@@ -7,10 +7,8 @@ local settings = require("platform.cli.java.settings")
 return {
   {
     "mfussenegger/nvim-jdtls",
-    opts = vim.tbl_extend("force", settings.plugin_opts(), {
-      jdtls = function(opts)
-        return settings.merge_jdtls(opts)
-      end,
-    }),
+    opts = function(_, opts)
+      return settings.apply_plugin_opts(opts)
+    end,
   },
 }
