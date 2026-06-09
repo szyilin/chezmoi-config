@@ -55,6 +55,19 @@ M.plugins_bufferline = {
   { "<S-l>", false },
 }
 
+-- LazyVim / Snacks 默认 (cwd) 快捷键，统一禁用，仅保留 Root Dir 版本
+M.disable_cwd_keys = {
+  { "<leader>E", false },
+  { "<leader>fE", false },
+  { "<leader>fF", false },
+  { "<leader>fR", false },
+  { "<leader>sG", false },
+  { "<leader>sW", mode = { "n", "x" }, false },
+  { "<leader>gG", false },
+  { "<leader>gL", false },
+  { "<leader>fT", false },
+}
+
 -- ============================================================
 -- 编写相关 edit
 -- ============================================================
@@ -77,6 +90,28 @@ local function _fun_finder()
 end
 
 -- =========================================================
+-- 禁用 (cwd) 快捷键
+-- =========================================================
+local function _disable_cwd_keys()
+  local keys = {
+    { "<leader>E", { "n" } },
+    { "<leader>fE", { "n" } },
+    { "<leader>fF", { "n" } },
+    { "<leader>fR", { "n" } },
+    { "<leader>sG", { "n" } },
+    { "<leader>sW", { "n", "x" } },
+    { "<leader>gG", { "n" } },
+    { "<leader>gL", { "n" } },
+    { "<leader>fT", { "n" } },
+  }
+  for _, item in ipairs(keys) do
+    for _, mode in ipairs(item[2]) do
+      pcall(vim.keymap.del, mode, item[1])
+    end
+  end
+end
+
+-- =========================================================
 -- which key 适配
 -- =========================================================
 local function _fun_which_key()
@@ -89,6 +124,7 @@ function M.setup()
   _fun_win_keys()
   _fun_editor()
   _fun_finder()
+  _disable_cwd_keys()
 
   _fun_which_key()
 end

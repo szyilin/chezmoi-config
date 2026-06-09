@@ -6,6 +6,7 @@ return {
   {
     "folke/snacks.nvim",
     opts = require("platform.cli.configs.ui").snacks,
+    keys = require("platform.cli.keymaps").disable_cwd_keys,
   },
   {
     "akinsho/bufferline.nvim",
