@@ -38,10 +38,8 @@ let g:NERDTreeMapJumpNextSibling="<C-j>"
 let g:NERDTreeMapJumpPrevSibling="<C-k>"
 
 " vim-flash（需在 IDE Plugins 市场手动安装插件 vim-flash，与 Neovim flash.nvim 键位对齐）
-nmap s <Action>(flash.search)
-xmap s <Action>(flash.search)
-nmap S <Action>(flash.treesitter)
-xmap S <Action>(flash.treesitter)
+nmap <C-;> <Action>(flash.search)
+xmap <C-;> <Action>(flash.search)
 nmap f <Action>(flash.find)
 xmap f <Action>(flash.find)
 nmap F <Action>(flash.find_backward)

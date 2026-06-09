@@ -35,21 +35,23 @@ end
 -- ============================================================
 -- editor 相关
 -- ============================================================
+local function flash_jump()
+  require("flash").jump()
+end
+
+-- LazyVim 自带 flash.nvim 键位（s/S/r/R 等），须用 lazy.nvim 的 false 显式卸载，
+-- 否则合并 spec 后仍会占用 s，且与原生 substitute 冲突。
 M.flash_keys = {
+  { "s", mode = { "n", "x", "o" }, false },
+  { "S", mode = { "n", "o", "x" }, false },
+  { "r", mode = "o", false },
+  { "R", mode = { "o", "x" }, false },
+  { "<c-s>", mode = { "c" }, false },
+  { "<c-space>", mode = { "n", "o", "x" }, false },
   {
-    "s",
-    function()
-      require("flash").jump()
-    end,
+    "<C-;>",
+    flash_jump,
     desc = "Flash",
-    mode = { "n", "x", "o" },
-  },
-  {
-    "S",
-    function()
-      require("flash").treesitter()
-    end,
-    desc = "Flash Treesitter",
     mode = { "n", "x", "o" },
   },
 }
