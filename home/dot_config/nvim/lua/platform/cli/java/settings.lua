@@ -1,7 +1,15 @@
 --[[
   Java / jdtls 集中配置（CLI）
-  工作区：stdpath("data")/jdtls/<项目名>/{config,workspace}
-  阶段二在此追加 downloadSources、反编译等文档相关项
+
+  所有 jdtls 数据均在 Neovim stdpath 下，不写入项目仓库、不散落系统其它目录：
+
+    stdpath("data")/jdtls/<项目名>/config       每项目 LSP 配置
+    stdpath("data")/jdtls/<项目名>/workspace    每项目源码索引与 workspace 元数据
+    stdpath("cache")/jdtls/shared-index/        跨项目共享的外部 jar 索引（按 jar 路径复用）
+
+  macOS 默认约为：
+    ~/.local/share/nvim/jdtls/...
+    ~/.cache/nvim/jdtls/shared-index/...
 ]]
 local M = {}
 
@@ -11,6 +19,23 @@ local METADATA_AT_ROOT_FLAG = "-Djava.import.generatesMetadataFilesAtProjectRoot
 ---@return string
 function M.jdtls_base()
   return vim.fn.stdpath("data") .. "/jdtls"
+end
+
+--- 跨项目共享的外部 jar 索引目录（Neovim cache，非 workspace 内）
+---@return string
+function M.shared_index_dir()
+  return vim.fn.stdpath("cache") .. "/jdtls/shared-index"
+end
+
+---@return string[]
+function M.jvm_perf_args()
+  return {
+    METADATA_AT_ROOT_FLAG,
+    "-Djava.ls.doNotSetDefaultJVM=true",
+    "-Djdt.core.sharedIndexLocation=" .. M.shared_index_dir(),
+    "-Xms1g",
+    "-Xmx4g",
+  }
 end
 
 ---@param project_name string
@@ -71,16 +96,21 @@ function M.plugin_opts()
   }
 end
 
---- 禁止在项目根生成 .project / .classpath / .settings（须通过 --jvm-arg 传递）
+--- 向 jdtls 启动命令注入 JVM 性能参数（须通过 --jvm-arg 传递）
 ---@param target table 含 cmd: string[] 的对象
 function M.patch_cmd(target)
   target.cmd = target.cmd or {}
+  local existing = {}
   for _, arg in ipairs(target.cmd) do
-    if arg:find(METADATA_AT_ROOT_FLAG, 1, true) then
-      return
+    existing[arg] = true
+  end
+  for _, jvm_arg in ipairs(M.jvm_perf_args()) do
+    local flag = "--jvm-arg=" .. jvm_arg
+    if not existing[flag] then
+      table.insert(target.cmd, flag)
+      existing[flag] = true
     end
   end
-  table.insert(target.cmd, "--jvm-arg=" .. METADATA_AT_ROOT_FLAG)
 end
 
 --- 包装 LazyVim 的 full_cmd，确保 JVM 参数进入最终 jdtls 启动命令
