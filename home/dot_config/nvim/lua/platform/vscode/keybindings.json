@@ -12,12 +12,6 @@
     "when": "editorTextFocus && neovim.mode != insert",
     "args": "<C-p>"
   },
-  {
-    "command": "vscode-neovim.send",
-    "key": "ctrl+;",
-    "when": "editorTextFocus && neovim.mode != insert",
-    "args": "<C-;>"
-  },
   // 适配资源管理器 vim 使用习惯
   {
     "key": "space o",

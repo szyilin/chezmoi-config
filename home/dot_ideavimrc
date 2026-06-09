@@ -1,6 +1,5 @@
 let mapleader=" " " 设置 leader 映射键
 "  ================================ 插件 ================================
-Plug 'vim-easymotion' " C-; 并添加一个想要跳转的位置，最后根据提示选取即可
 Plug 'preservim/nerdtree'
 Plug 'tpope/vim-surround' " ys, cs, ds, S, 字体环绕
 Plug 'vim-commentary' " 使用 gcc 注释单行 gc 注释选中的多行注释
@@ -37,8 +36,25 @@ nnoremap <leader>e :NERDTreeFind<CR>
 " let g:NERDTreeMapQuit=" o"
 let g:NERDTreeMapJumpNextSibling="<C-j>"
 let g:NERDTreeMapJumpPrevSibling="<C-k>"
-" 禁用 easymotion 默认快捷操作
-let g:EasyMotion_do_mapping=0
+
+" vim-flash（需在 IDE Plugins 市场手动安装插件 vim-flash，与 Neovim flash.nvim 键位对齐）
+nmap s <Action>(flash.search)
+xmap s <Action>(flash.search)
+nmap S <Action>(flash.treesitter)
+xmap S <Action>(flash.treesitter)
+nmap f <Action>(flash.find)
+xmap f <Action>(flash.find)
+nmap F <Action>(flash.find_backward)
+xmap F <Action>(flash.find_backward)
+nmap t <Action>(flash.till)
+xmap t <Action>(flash.till)
+nmap T <Action>(flash.till_backward)
+xmap T <Action>(flash.till_backward)
+nmap ; <Action>(flash.repeat)
+xmap ; <Action>(flash.repeat)
+nmap , <Action>(flash.repeat_backward)
+xmap , <Action>(flash.repeat_backward)
+omap r <Action>(flash.remote)
 
 "  ============================== keyMap 键盘映射 ========================
 " $ 在 v 模式下不会选中回车符号"

@@ -1,5 +1,5 @@
 return {
-  -- 类似 easymotion 插件适配
+  -- flash.nvim 跳转（键位见 core/keymaps.lua）
   {
     "folke/flash.nvim",
     opts = {},

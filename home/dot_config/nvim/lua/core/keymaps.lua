@@ -37,15 +37,21 @@ end
 -- ============================================================
 M.flash_keys = {
   {
-    "<C-;>",
+    "s",
     function()
       require("flash").jump()
     end,
     desc = "Flash",
     mode = { "n", "x", "o" },
   },
-  { "s", mode = { "n", "x", "o" }, false },
-  { "S", mode = { "n", "o", "x" }, false },
+  {
+    "S",
+    function()
+      require("flash").treesitter()
+    end,
+    desc = "Flash Treesitter",
+    mode = { "n", "x", "o" },
+  },
 }
 
 -- 使用模块函数加载，防止 require 缓存机制，导致运行顺序错误
