@@ -68,6 +68,12 @@
     "cask": {
       "macshot": {
         "default": true
+      },
+      "pearcleaner": {
+        "default": true
+      },
+      "stats": {
+        "default": true
       }
     }
   },
