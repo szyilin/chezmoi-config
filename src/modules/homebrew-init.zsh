@@ -107,9 +107,13 @@ homebrew-init_verify() {
     fi
     
     # 显示已安装包的统计信息
-    local installed_count=""
-    if installed_count="$(brew list --formula 2>/dev/null | wc -l | tr -d ' ')"; then
-        log_info "已安装 Homebrew 包: $installed_count 个"
+    local formula_count=""
+    local cask_count=""
+    if formula_count="$(brew list --formula 2>/dev/null | wc -l | tr -d ' ')"; then
+        log_info "已安装 Homebrew formula: $formula_count 个"
+    fi
+    if is_macos && cask_count="$(brew list --cask 2>/dev/null | wc -l | tr -d ' ')"; then
+        log_info "已安装 Homebrew cask: $cask_count 个"
     fi
     
     log_success "Homebrew 包管理验证通过"

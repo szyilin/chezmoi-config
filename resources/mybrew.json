@@ -57,6 +57,17 @@
       },
       "go": {
         "default": true
+      },
+      "ffmpeg": {
+        "default": true
+      },
+      "maven": {
+        "default": true
+      }
+    },
+    "cask": {
+      "macshot": {
+        "default": true
       }
     }
   },
@@ -78,7 +89,7 @@
         "default": true
       },
       "tmux": {
-        "default": false
+        "default": true
       }
     }
   }
