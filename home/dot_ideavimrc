@@ -79,9 +79,10 @@ inoremap <C-f> <Right>
 inoremap <C-c> <Esc>
 nnoremap <C-c> <Esc>
 vnoremap <C-c> <Esc>
-" 代码定义跳转
-nnoremap gd :<C-u>action GotoDeclaration<CR>
-nnoremap gi :<C-u>action GotoImplementation<CR>
+" LSP 导航（与 Neovim LazyVim 对齐：gd 定义 / gr 引用 / gI 实现）
+" gd 使用 IdeaVim 内置 GotoDeclaration（保留跳转列表，无需重复映射）
+nnoremap gr :<C-u>action FindUsages<CR>
+nnoremap gI :<C-u>action GotoImplementation<CR>
 " ideavim 插件相关
 nnoremap <leader>Cr :action IdeaVim.ReloadVimRc.reload<CR>
 nnoremap <leader>Cl :actionlist<CR>
@@ -217,8 +218,9 @@ let g:WhichKeyDesc_format_inport = "=i 优化导包"
 
 " g g 命令
 let g:WhichKeyDesc_g     = "g g 命令"
-let g:WhichKeyDesc_g_d   = "gd 代码定义"
-let g:WhichKeyDesc_g_i   = "gi 代码实现"
+let g:WhichKeyDesc_g_d   = "gd 跳转定义"
+let g:WhichKeyDesc_g_r   = "gr 查找引用"
+let g:WhichKeyDesc_g_I   = "gI 跳转实现"
 let g:WhichKeyDesc_g_c   = "gc 注释(可选{motion})"
 let g:WhichKeyDesc_g_c_c = "gcc 注释一行"
 
