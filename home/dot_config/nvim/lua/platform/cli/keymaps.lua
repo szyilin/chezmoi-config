@@ -55,6 +55,14 @@ M.plugins_bufferline = {
   { "<S-l>", false },
 }
 
+-- LazyVim 默认窗口/缓冲区/查找快捷键
+M.disable_lazyvim_keys = {
+  { "<leader>-", false },
+  { "<leader>|", false },
+  { "<leader>`", false },
+  { "<leader><space>", false },
+}
+
 -- LazyVim / Snacks 默认 (cwd) 快捷键，统一禁用，仅保留 Root Dir 版本
 M.disable_cwd_keys = {
   { "<leader>E", false },
@@ -108,6 +116,23 @@ local function _fun_finder()
 end
 
 -- =========================================================
+-- 禁用 LazyVim 默认快捷键
+-- =========================================================
+local function _disable_lazyvim_keys()
+  local keys = {
+    { "<leader>-", { "n" } },
+    { "<leader>|", { "n" } },
+    { "<leader>`", { "n" } },
+    { "<leader><space>", { "n" } },
+  }
+  for _, item in ipairs(keys) do
+    for _, mode in ipairs(item[2]) do
+      pcall(vim.keymap.del, mode, item[1])
+    end
+  end
+end
+
+-- =========================================================
 -- 禁用 (cwd) 快捷键
 -- =========================================================
 local function _disable_cwd_keys()
@@ -145,6 +170,7 @@ function M.setup()
   _fun_win_keys()
   _fun_editor()
   _fun_finder()
+  _disable_lazyvim_keys()
   _disable_cwd_keys()
 
   _fun_which_key()

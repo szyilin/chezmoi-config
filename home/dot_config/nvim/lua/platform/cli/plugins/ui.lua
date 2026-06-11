@@ -6,7 +6,10 @@ return {
   {
     "folke/snacks.nvim",
     opts = require("platform.cli.configs.ui").snacks,
-    keys = require("platform.cli.keymaps").disable_cwd_keys,
+    keys = function()
+      local km = require("platform.cli.keymaps")
+      return vim.list_extend(vim.deepcopy(km.disable_lazyvim_keys), km.disable_cwd_keys)
+    end,
   },
   {
     "akinsho/bufferline.nvim",
