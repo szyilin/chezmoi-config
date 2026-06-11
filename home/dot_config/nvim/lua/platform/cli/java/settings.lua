@@ -151,11 +151,30 @@ function M.apply_plugin_opts(opts)
   return opts
 end
 
+--- Spring Boot jdtls extension jars（依赖 spring-boot.nvim + Mason vscode-spring-boot-tools）
+---@return string[]
+function M.spring_boot_bundles()
+  local ok, spring_boot = pcall(require, "spring_boot")
+  if not ok then
+    return {}
+  end
+  -- 不在此调用 setup()：避免抢在 plugin config 之前初始化，导致高级配置被忽略
+  return spring_boot.java_extensions() or {}
+end
+
 ---@param opts table jdtls attach config
 ---@return table
 function M.merge_jdtls(opts)
   M.patch_cmd(opts)
   opts.settings = vim.tbl_deep_extend("force", opts.settings or {}, M.lsp_settings())
+
+  opts.init_options = opts.init_options or {}
+  opts.init_options.bundles = opts.init_options.bundles or {}
+  local spring_bundles = M.spring_boot_bundles()
+  if #spring_bundles > 0 then
+    vim.list_extend(opts.init_options.bundles, spring_bundles)
+  end
+
   return opts
 end
 

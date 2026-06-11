@@ -76,6 +76,19 @@ local function _fun_editor()
   vim.keymap.set("n", "==", function()
     vim.lsp.buf.format({ async = true })
   end)
+
+  -- 优化导包（LSP source.organizeImports，语言无关）
+  util.nmap("=i", function()
+    require("core.lsp").organize_imports()
+  end, { desc = "Organize Imports" })
+
+  -- 按 severity 优先级跳转诊断（IDEA [e / ]e：ERROR 优先，再到 WARN 等）
+  util.nmap("]e", function()
+    require("core.diagnostics").jump(true)
+  end, { desc = "Next Problem (severity order)" })
+  util.nmap("[e", function()
+    require("core.diagnostics").jump(false)
+  end, { desc = "Prev Problem (severity order)" })
 end
 
 -- ============================================================
@@ -87,6 +100,11 @@ local function _fun_finder()
     snacks.picker.grep()
   end, { desc = "Grep find all" })
   vim.keymap.del("n", "<leader>/") -- snacks grep default command
+
+  -- URL 查找：LSP 优先，endpoint.nvim 兜底
+  util.nmap("<leader>fu", function()
+    require("platform.cli.find_url").find_url()
+  end, { desc = "Find URL" })
 end
 
 -- =========================================================
@@ -116,7 +134,10 @@ end
 -- =========================================================
 local function _fun_which_key()
   require("which-key").add({
-    -- { "<leader>fa", desc = "Grep (Root Dir)" },
+    { "=i", desc = "Organize Imports" },
+    { "[e", desc = "Prev Problem (severity order)" },
+    { "]e", desc = "Next Problem (severity order)" },
+    { "<leader>fu", desc = "Find URL" },
   })
 end
 
