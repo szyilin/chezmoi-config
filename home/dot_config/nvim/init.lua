@@ -4,4 +4,7 @@ vim.g.maplocalleader = "\\"
 
 vim.g.lazyvim_platform = require("platform").detect()
 
+-- UPSTREAM-WORKAROUND: inlay hint col out of range — see core/workarounds/README.md
+require("core.workarounds.inlay_hint").setup()
+
 require("config.lazy")

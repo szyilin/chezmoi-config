@@ -3,6 +3,11 @@ local M = {}
 local util = require("utils")
 local snacks = require("snacks")
 
+--- LazyVim / 插件版本变化时目标键可能未注册，del 须容错
+local function safe_del(mode, lhs)
+  pcall(vim.keymap.del, mode, lhs)
+end
+
 -- ============================================================
 -- 窗口操作相关 window
 -- ============================================================
@@ -43,9 +48,9 @@ local function _fun_win_keys()
   util.nmap("<c-,>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
   util.nmap("<c-.>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
 
-  -- 移除 LazyVim 默认配置
-  vim.keymap.del("n", "L")
-  vim.keymap.del("n", "H")
+  -- 移除 LazyVim 默认 buffer 跳转（若存在）
+  safe_del("n", "L")
+  safe_del("n", "H")
 end
 M.plugins_bufferline = {
   -- 切换 buffer
@@ -107,7 +112,7 @@ local function _fun_finder()
   util.nmap("<leader>fa", function()
     snacks.picker.grep()
   end, { desc = "Grep find all" })
-  vim.keymap.del("n", "<leader>/") -- snacks grep default command
+  safe_del("n", "<leader>/") -- snacks grep default command
 
   -- URL 查找：LSP 优先，endpoint.nvim 兜底
   util.nmap("<leader>fu", function()
@@ -127,7 +132,7 @@ local function _disable_lazyvim_keys()
   }
   for _, item in ipairs(keys) do
     for _, mode in ipairs(item[2]) do
-      pcall(vim.keymap.del, mode, item[1])
+      safe_del(mode, item[1])
     end
   end
 end
@@ -149,7 +154,7 @@ local function _disable_cwd_keys()
   }
   for _, item in ipairs(keys) do
     for _, mode in ipairs(item[2]) do
-      pcall(vim.keymap.del, mode, item[1])
+      safe_del(mode, item[1])
     end
   end
 end
