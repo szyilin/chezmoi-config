@@ -1,8 +1,9 @@
 --[[
   诊断跳转（语言无关）
 
-  [e / ]e：按 severity 优先级循环跳转（ERROR → WARN → INFO → HINT），
-  同级再按行号、列号排序；处理完所有高优先级后再进入低优先级。
+  [e / ]e：只在当前 buffer 中「最高 severity」的诊断间循环跳转
+  （例如仍有 ERROR 时只跳 ERROR，全部消除后才跳 WARN，以此类推）；
+  同级按行号、列号排序。
 ]]
 local M = {}
 
@@ -10,9 +11,6 @@ local M = {}
 ---@param b vim.Diagnostic
 ---@return boolean
 local function cmp_diag(a, b)
-  if a.severity ~= b.severity then
-    return a.severity < b.severity
-  end
   if a.lnum ~= b.lnum then
     return a.lnum < b.lnum
   end
@@ -21,9 +19,35 @@ end
 
 ---@param diagnostics vim.Diagnostic[]
 ---@return vim.Diagnostic[]
-local function sort_by_priority(diagnostics)
+local function sort_by_position(diagnostics)
   table.sort(diagnostics, cmp_diag)
   return diagnostics
+end
+
+--- 只保留 buffer 中最高 severity（数字最小）的诊断
+---@param diagnostics vim.Diagnostic[]
+---@return vim.Diagnostic[]
+local function filter_top_severity(diagnostics)
+  if #diagnostics == 0 then
+    return diagnostics
+  end
+
+  local top = diagnostics[1].severity
+  for i = 2, #diagnostics do
+    local s = diagnostics[i].severity
+    if s < top then
+      top = s
+    end
+  end
+
+  local filtered = {}
+  for _, d in ipairs(diagnostics) do
+    if d.severity == top then
+      filtered[#filtered + 1] = d
+    end
+  end
+
+  return sort_by_position(filtered)
 end
 
 ---@param d vim.Diagnostic
@@ -88,7 +112,7 @@ function M.jump(next, count)
   end
 
   local buf = vim.api.nvim_get_current_buf()
-  local diagnostics = sort_by_priority(vim.diagnostic.get(buf))
+  local diagnostics = filter_top_severity(vim.diagnostic.get(buf))
   if #diagnostics == 0 then
     vim.notify("No diagnostics", vim.log.levels.INFO)
     return
@@ -99,20 +123,24 @@ function M.jump(next, count)
   local n = #diagnostics
 
   local on_idx, upcoming_idx = locate(diagnostics, lnum, col)
+  local base ---@type integer
   local idx ---@type integer
 
   if next then
     if on_idx then
-      idx = on_idx
+      base = on_idx
     elseif upcoming_idx then
-      idx = upcoming_idx - 1
+      base = upcoming_idx - 1
     else
-      idx = 0
+      base = 0
     end
-    idx = (idx + count - 1) % n + 1
+    idx = (base + count) % n
+    if idx == 0 then
+      idx = n
+    end
   else
     if on_idx then
-      idx = on_idx
+      base = on_idx
     else
       local last_before = 0
       for i, d in ipairs(diagnostics) do
@@ -120,9 +148,9 @@ function M.jump(next, count)
           last_before = i
         end
       end
-      idx = last_before + 1
+      base = last_before + 1
     end
-    idx = ((idx - count - 1) % n + n) % n + 1
+    idx = ((base - count - 1) % n + n) % n + 1
   end
 
   jump_to(diagnostics[idx])
