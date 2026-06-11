@@ -74,6 +74,9 @@
       },
       "stats": {
         "default": true
+      },
+      "bruno": {
+        "default": true
       }
     }
   },
