@@ -85,10 +85,10 @@ M.disable_cwd_keys = {
 -- 编写相关 edit
 -- ============================================================
 local function _fun_editor()
-  -- 映射 == 为全文格式化
-  vim.keymap.set("n", "==", function()
-    vim.lsp.buf.format({ async = true })
-  end)
+  -- 全文格式化：走 LazyVim 统一 formatter 管线（conform → LSP fallback）
+  util.nmap("==", function()
+    LazyVim.format({ force = true })
+  end, { desc = "Format Buffer" })
 
   -- 优化导包（LSP source.organizeImports，语言无关）
   util.nmap("=i", function()

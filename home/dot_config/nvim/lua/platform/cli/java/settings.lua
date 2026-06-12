@@ -15,6 +15,14 @@ local M = {}
 
 local METADATA_AT_ROOT_FLAG = "-Djava.import.generatesMetadataFilesAtProjectRoot=false"
 
+--- IDEA Default 导出（Eclipse XML Profile），见 nvim/formatter/intellij-default-java-format.xml
+local FORMATTER_PROFILE = "Default"
+
+---@return string
+function M.formatter_url()
+  return vim.fn.stdpath("config") .. "/formatter/intellij-default-java-format.xml"
+end
+
 --- jdtls 数据根目录（Neovim data，非 cache）
 ---@return string
 function M.jdtls_base()
@@ -69,6 +77,13 @@ function M.lsp_settings()
       gradle = { enabled = false },
       -- LSP 侧声明（真正生效须配合 patch_cmd 的 JVM 参数）
       generatesMetadataFilesAtProjectRoot = false,
+    },
+    format = {
+      enabled = true,
+      settings = {
+        url = M.formatter_url(),
+        profile = FORMATTER_PROFILE,
+      },
     },
   }
 
