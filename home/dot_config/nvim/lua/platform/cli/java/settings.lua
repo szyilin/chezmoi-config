@@ -35,14 +35,13 @@ function M.shared_index_dir()
   return vim.fn.stdpath("cache") .. "/jdtls/shared-index"
 end
 
+--- jdtls 启动器（jdtls.py）内置 -Xms1G，不设 -Xmx（由 JVM 按可用内存决定上限）
 ---@return string[]
 function M.jvm_perf_args()
   return {
     METADATA_AT_ROOT_FLAG,
     "-Djava.ls.doNotSetDefaultJVM=true",
     "-Djdt.core.sharedIndexLocation=" .. M.shared_index_dir(),
-    "-Xms1g",
-    "-Xmx4g",
   }
 end
 
