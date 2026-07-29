@@ -181,12 +181,49 @@ def save_config(config_path: Path, cfg: Dict) -> bool:
         tmp = config_path.with_suffix(".tmp.json")
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(cfg, f, ensure_ascii=False, indent=2)
+            f.write("\n")
         tmp.replace(config_path)
         return True
     except Exception as e:
         log_error(f"保存配置文件失败: {e}")
         log_info(f"请检查文件权限: {config_path}")
         return False
+
+
+def get_ignore_sets(os_node: Dict) -> Tuple[Set[str], Set[str]]:
+    """读取 os 节点下 ignore.package / ignore.cask 名单"""
+    ignore = os_node.get("ignore") or {}
+    formulae = ignore.get("package") or []
+    casks = ignore.get("cask") or []
+    return set(formulae), set(casks)
+
+
+def add_packages_to_ignore(os_node: Dict, items: List[PackageRef]) -> int:
+    """将包名并入 ignore 名单，返回新增数量"""
+    if not items:
+        return 0
+
+    ignore = os_node.setdefault("ignore", {})
+    pkg_list = list(ignore.get("package") or [])
+    cask_list = list(ignore.get("cask") or [])
+    pkg_set = set(pkg_list)
+    cask_set = set(cask_list)
+    added = 0
+
+    for name, kind in items:
+        if kind == PACKAGE_FORMULA and name not in pkg_set:
+            pkg_list.append(name)
+            pkg_set.add(name)
+            added += 1
+        elif kind == PACKAGE_CASK and name not in cask_set:
+            cask_list.append(name)
+            cask_set.add(name)
+            added += 1
+
+    ignore["package"] = sorted(pkg_list)
+    if cask_list or "cask" in ignore:
+        ignore["cask"] = sorted(cask_list)
+    return added
 
 
 def detect_os_key() -> Tuple[str, bool]:
@@ -969,17 +1006,28 @@ def backup_cmd() -> bool:
     os_node = cfg.setdefault(os_key, {})
     current_formulae = os_node.get("package", {})
     current_casks = os_node.get("cask", {}) if os_key == "Darwin" else {}
+    ignore_formulae, ignore_casks = get_ignore_sets(os_node)
 
-    new_formulae = [pkg for pkg in installed_formulae if pkg not in current_formulae]
-    new_casks = [pkg for pkg in installed_casks if pkg not in current_casks]
-    existing_count = (
-        len(installed_formulae) - len(new_formulae)
-        + len(installed_casks) - len(new_casks)
+    new_formulae = [
+        pkg for pkg in installed_formulae
+        if pkg not in current_formulae and pkg not in ignore_formulae
+    ]
+    new_casks = [
+        pkg for pkg in installed_casks
+        if pkg not in current_casks and pkg not in ignore_casks
+    ]
+    existing_count = sum(1 for pkg in installed_formulae if pkg in current_formulae) + sum(
+        1 for pkg in installed_casks if pkg in current_casks
+    )
+    ignored_installed = sum(1 for pkg in installed_formulae if pkg in ignore_formulae) + sum(
+        1 for pkg in installed_casks if pkg in ignore_casks
     )
 
     print()
     if existing_count:
         print_info(f"配置中已存在: {existing_count} 个包")
+    if ignored_installed:
+        print_info(f"已忽略 (ignore): {ignored_installed} 个包")
 
     new_items: List[PackageRef] = (
         [(name, PACKAGE_FORMULA) for name in new_formulae]
@@ -1004,6 +1052,16 @@ def backup_cmd() -> bool:
     merge = input("是否将新包合并到配置文件? [Y/n]: ").strip().lower()
     if merge == 'n':
         log_info("跳过合并操作")
+        add_ignore = input("是否将这些包加入 ignore（以后不再提示）? [Y/n]: ").strip().lower()
+        if add_ignore != 'n':
+            added = add_packages_to_ignore(os_node, new_items)
+            if added and save_config(config_path, cfg):
+                log_success(f"已将 {added} 个包加入 ignore")
+            elif added:
+                log_error("保存 ignore 配置失败")
+                return False
+            else:
+                log_info("ignore 名单无需更新")
         return True
 
     default_map = ask_default_install_strategy(new_items)
@@ -1040,6 +1098,10 @@ def print_usage():
     print("  mybrew.py install  - 安装配置文件中的包")
     print("  mybrew.py backup   - 备份当前已安装的包到配置文件")
     print("  mybrew.py --help   - 显示此帮助信息")
+    print()
+    print_colored("ignore 名单:", Colors.WHITE, bold=True)
+    print("  在 mybrew.json 的 <OS>.ignore.package / .cask 中列出临时本机包")
+    print("  backup 会跳过这些包；拒绝合并时也可选择写入 ignore")
     print()
     print_colored("🏗️ 架构集成:", Colors.WHITE, bold=True)
     print("  • 与 Chezmoi 环境初始化工具深度集成")

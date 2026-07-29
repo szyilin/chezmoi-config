@@ -75,6 +75,20 @@
       "bruno": {
         "default": true
       }
+    },
+    "ignore": {
+      "package": [
+        "exiftool",
+        "git-filter-repo",
+        "gitleaks",
+        "openjdk@17",
+        "poppler",
+        "trufflehog",
+        "typst"
+      ],
+      "cask": [
+        "mitmproxy"
+      ]
     }
   },
   "Linux": {
