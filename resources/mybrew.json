@@ -72,9 +72,6 @@
       "pearcleaner": {
         "default": true
       },
-      "stats": {
-        "default": true
-      },
       "bruno": {
         "default": true
       }

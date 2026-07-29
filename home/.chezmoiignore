@@ -20,3 +20,6 @@ __pycache__/
 **/__pycache__/
 *.py[cod]
 *.pyc
+
+# age 身份密钥密文（由 bootstrap 脚本解密，不作为 dotfile 同步到 $HOME）
+key.txt.age
