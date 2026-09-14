@@ -1,0 +1,2 @@
+# Rust: brew-installed rustup multiproxy must use an absolute target
+.cargo/bin/rustup symlink_type=absolute
