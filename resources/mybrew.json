@@ -66,13 +66,13 @@
       }
     },
     "cask": {
-      "macshot": {
-        "default": true
-      },
-      "pearcleaner": {
-        "default": true
-      },
       "bruno": {
+        "default": true
+      },
+      "homebrew-app": {
+        "default": true
+      },
+      "macshot": {
         "default": true
       }
     },
